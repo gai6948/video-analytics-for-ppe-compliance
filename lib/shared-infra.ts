@@ -37,7 +37,6 @@ export class SharedInfraStack extends Stack {
     this.vpc = vpc;
 
     const cluster = new ecs.Cluster(this, "VideoMonitoringFargateCluster", {
-      clusterName: "VideoMonitoringFargateCluster",
       containerInsights: true,
       vpc: this.vpc,
     });
@@ -62,7 +61,6 @@ export class SharedInfraStack extends Stack {
       service: ec2.GatewayVpcEndpointAwsService.S3,
       subnets: [{ subnetType: ec2.SubnetType.PRIVATE }],
     });
-
 
   }
 }

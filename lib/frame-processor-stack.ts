@@ -159,6 +159,7 @@ export class FrameProcessorStack extends Stack {
     ppeProcessorFunction.node.addDependency(processedFrameBucket);
 
     // Grant access to the Lambda function
+    newFrameQueue.grantConsumeMessages(ppeProcessorFunction);
     rawFrameBucket.grantRead(ppeProcessorFunction);
     processedFrameBucket.grantPut(ppeProcessorFunction);
     violationAlarmTopic.grantPublish(ppeProcessorFunction);

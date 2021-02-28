@@ -9,8 +9,8 @@ import { MonitoringDashboard } from "../lib/dashboard-stack";
 
 const app = new cdk.App();
 
-const infraStack = new SharedInfraStack(app, "VideoMonitoringInfraStack", {
-  description: "Shared infrastructure for video monitoring services",
+const infraStack = new SharedInfraStack(app, "VideoAnalyticsInfraStack", {
+  description: "Shared infrastructure for video analytics services",
 });
 
 const graphQLLayerStack = new GraphQLStack(app, "GraphQLLayerStack", {
