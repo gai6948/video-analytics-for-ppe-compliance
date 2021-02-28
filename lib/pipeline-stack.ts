@@ -51,7 +51,7 @@ export class PipelineStack extends Stack {
       selfMutating: true
     });
 
-    const deploymentStage = new VideoAnalyticsDeploymentStage(this, "Prod", {
+    const deploymentStage = new VideoAnalyticsDeploymentStage(this, "Deployment", {
       env: { region: "us-west-2" },
     });
     cdkPipeline.addApplicationStage(deploymentStage);
