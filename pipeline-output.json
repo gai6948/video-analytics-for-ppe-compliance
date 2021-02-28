@@ -1,0 +1,5 @@
+{
+  "VideoAnalyticsPipelineStack": {
+    "CodeCommitRepoSshUrl": "ssh://git-codecommit.us-west-2.amazonaws.com/v1/repos/video-analytics-for-ppe-compliance"
+  }
+}
