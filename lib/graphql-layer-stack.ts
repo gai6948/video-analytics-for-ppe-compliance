@@ -210,15 +210,15 @@ export class GraphQLStack extends Stack {
       }
     );
 
-    const newAlarmFunction = new appsync.AppsyncFunction(this, "NewPPEAlarmFunction", {
-      api: appsyncAPI,
-      dataSource: ppeAlarmDataSource,
-      name: 'ppeAlarmFunction',
-      requestMappingTemplate: appsync.MappingTemplate.fromFile(
-        "./src/graphql/vtl/newAlarmRequest.vtl"
-      ),
-      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
-    });
+    // const newAlarmFunction = new appsync.AppsyncFunction(this, "NewPPEAlarmFunction", {
+    //   api: appsyncAPI,
+    //   dataSource: ppeAlarmDataSource,
+    //   name: 'ppeAlarmFunction',
+    //   requestMappingTemplate: appsync.MappingTemplate.fromFile(
+    //     "./src/graphql/vtl/newAlarmRequest.vtl"
+    //   ),
+    //   responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
+    // });
 
     // const updateFrameFunction = new appsync.AppsyncFunction(this, "UpdateFrameFunction", {
     //   api: appsyncAPI,
@@ -230,26 +230,26 @@ export class GraphQLStack extends Stack {
     //   responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
     // });
 
-    const ppeAlarmResolver = new appsync.Resolver(this, "PPEAlarmResolver", {
-      api: appsyncAPI,
-      fieldName: 'newAlarm',
-      typeName: 'Mutation',
-      pipelineConfig: [
-        newAlarmFunction,
-        // updateFrameFunction
-      ],
-      requestMappingTemplate: appsync.MappingTemplate.fromString('{}'),
-      responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
-    });
-
-    // ppeAlarmDataSource.createResolver({
-    //   typeName: "Mutation",
-    //   fieldName: "newAlarm",
-    //   requestMappingTemplate: appsync.MappingTemplate.fromFile(
-    //     "./src/graphql/vtl/newAlarm.vtl"
-    //   ),
-    //   responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
+    // const ppeAlarmResolver = new appsync.Resolver(this, "PPEAlarmResolver", {
+    //   api: appsyncAPI,
+    //   fieldName: 'newAlarm',
+    //   typeName: 'Mutation',
+    //   pipelineConfig: [
+    //     newAlarmFunction,
+    //     // updateFrameFunction
+    //   ],
+    //   requestMappingTemplate: appsync.MappingTemplate.fromString('{}'),
+    //   responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
     // });
+
+    ppeAlarmDataSource.createResolver({
+      typeName: "Mutation",
+      fieldName: "newAlarm",
+      requestMappingTemplate: appsync.MappingTemplate.fromFile(
+        "./src/graphql/vtl/newAlarmRequest.vtl"
+      ),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
+    });
     
     const esDomain = new es.Domain(this, "ESDomain", {
       version: es.ElasticsearchVersion.V7_1,
