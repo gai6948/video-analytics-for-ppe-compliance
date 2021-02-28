@@ -56,10 +56,9 @@ export class FrameProcessorStack extends Stack {
     const newFrameTopic = new sns.Topic(this, "NewFrameTopic");
     const newFrameQueue = new sqs.Queue(this, "NewFrameQueue", {
       retentionPeriod: Duration.days(1),
-      encryption: sqs.QueueEncryption.KMS_MANAGED,
+      encryption: sqs.QueueEncryption.UNENCRYPTED,
       visibilityTimeout: Duration.seconds(10),
     });
-    newFrameQueue.encryptionMasterKey?.grantEncryptDecrypt(new iam.ServicePrincipal("sns.amazonaws.com"));
     newFrameTopic.addSubscription(new sub.SqsSubscription(newFrameQueue));
     rawFrameBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SnsDestination(newFrameTopic));
 
