@@ -1,0 +1,39 @@
+{
+  "ModelName": "video-analytics-camera-frame-table",
+  "ModelMetadata": {
+    "Author": "gaius",
+    "DateCreated": "Jan 22, 2021, 01:11 PM",
+    "DateLastModified": "Jan 22, 2021, 01:47 PM",
+    "Description": "",
+    "AWSService": "Amazon DynamoDB",
+    "Version": "2.0"
+  },
+  "DataModel": [
+    {
+      "TableName": "camera-frame-mapping",
+      "KeyAttributes": {
+        "PartitionKey": {
+          "AttributeName": "cameraId",
+          "AttributeType": "S"
+        },
+        "SortKey": {
+          "AttributeName": "ts",
+          "AttributeType": "S"
+        }
+      },
+      "NonKeyAttributes": [
+        {
+          "AttributeName": "s3url",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "ppeResult",
+          "AttributeType": "M"
+        }
+      ],
+      "DataAccess": {
+        "MySql": {}
+      }
+    }
+  ]
+}

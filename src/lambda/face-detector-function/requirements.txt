@@ -1,0 +1,11 @@
+certifi==2020.12.5
+chardet==4.0.0
+gql==2.0.0
+graphql-core==2.3.2
+idna==2.10
+promise==2.3
+requests==2.25.1
+requests-aws4auth==1.0.1
+Rx==1.6.1
+six==1.15.0
+urllib3==1.26.2

@@ -1,0 +1,10 @@
+{
+  "version": "2018-05-29",
+  "operation": "PutItem",
+  "key": {
+    "cameraId": $util.dynamodb.toDynamoDBJson($ctx.args.cameraId),
+    "ts": $util.dynamodb.toDynamoDBJson($ctx.args.ts),
+    "status": $util.dynamodb.toDynamoDBJson("enabled")
+  },
+  "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args)
+}

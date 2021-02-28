@@ -1,0 +1,9 @@
+.venv
+.vscode
+.pytest*
+.build
+debug
+
+local.py
+ppe-detector.py
+*.pyc

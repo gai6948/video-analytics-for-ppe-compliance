@@ -1,0 +1,98 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Query {
+  # getCamera(id: String!): Camera
+  listCamera: [Camera!]
+}
+
+type Mutation {
+  injestFrame(
+    cameraId: String!
+    ts: String!
+    s3url: String
+    ppeResult: PPEResultInput
+    ppeViolationCount: Int
+    pplCount: Int
+  ): Frame
+  addCamera(cameraId: String!): Camera
+  newAlarm(
+    cameraId: String!
+    ts: String!
+    s3url: String
+    status: String
+    persons: [PersonInput]
+  ): Alarm
+  updateFrame(cameraId: String!, ts: String!, persons: [PersonInput]): Frame
+}
+
+type Subscription {
+  onNewFrame(cameraId: String!): Frame
+    @aws_subscribe(mutations: ["injestFrame"])
+}
+
+type Camera {
+  id: String!
+  latestFrame: Frame
+}
+
+type Frame {
+  cameraId: String!
+  ts: String!
+  s3url: String
+  ppeResult: PPEResult
+  persons: [Person]
+  ppeViolationCount: Int
+  pplCount: Int
+}
+
+type Alarm {
+  cameraId: String!
+  ts: String!
+  s3url: String
+  status: String
+  persons: [Person]
+}
+
+type PPEResult {
+  personsWithRequiredEquipment: [Person]
+  personsWithoutRequiredEquipment: [Person]
+}
+
+input PPEResultInput {
+  personsWithRequiredEquipment: [PersonInput!]
+  personsWithoutRequiredEquipment: [PersonInput!]
+}
+
+type Person {
+  id: Int!
+  boundingBox: BoundingBox!
+  missingMask: Boolean
+  missingHelmet: Boolean
+  faceId: String
+}
+
+input PersonInput {
+  id: Int!
+  boundingBox: BoundingBoxInput!
+  missingMask: Boolean
+  missingHelmet: Boolean
+  faceId: String
+}
+
+type BoundingBox {
+  width: Float!
+  height: Float!
+  left: Float!
+  top: Float!
+}
+
+input BoundingBoxInput {
+  width: Float!
+  height: Float!
+  left: Float!
+  top: Float!
+}

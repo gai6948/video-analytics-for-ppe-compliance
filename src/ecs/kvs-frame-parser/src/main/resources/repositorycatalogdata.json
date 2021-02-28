@@ -1,0 +1,11 @@
+{
+    "description": "Java worker that converts video from Kinesis Video Streams into frame on S3",
+    "architectures": [
+        "x86"
+    ],
+    "operatingSystems": [
+        "Linux"
+    ],
+    "aboutText": "This repository is used as a sample only.",
+    "usageText": "This repository is not intended for production use"
+}
