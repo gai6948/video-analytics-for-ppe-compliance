@@ -18,22 +18,22 @@ const graphQLLayerStack = new GraphQLStack(app, "GraphQLLayerStack", {
     "Stack containing the GraphQL API, its resolver functions and Cognito User Pool",
 });
 
-const frameParserStack = new FrameParserStack(app, "KVSFrameParserStack", {
-  cluster: infraStack.cluster,
-  privateSubnets: infraStack.privateSubnets,
-});
-
 const frameProcessorStack = new FrameProcessorStack(
   app,
   "FrameProcessorStack",
   {
     targetGqlApi: graphQLLayerStack.appsyncAPI,
     cognitoAuthRole: graphQLLayerStack.cognitoAuthRole,
-    rawFrameBucket: frameParserStack.rawFrameBucket,
     description:
       "A stack that contains a Kinesis Data Streams, a Lambda consumer processing the frames, and an S3 bucket storing the frames",
   }
 );
+
+const frameParserStack = new FrameParserStack(app, "KVSFrameParserStack", {
+  cluster: infraStack.cluster,
+  privateSubnets: infraStack.privateSubnets,
+  rawFrameBucket: frameProcessorStack.rawFrameBucket
+});
 
 // const cwDashboardStack = new MonitoringDashboard(
 //   app,

@@ -12,13 +12,13 @@ import * as s3 from '@aws-cdk/aws-s3';
 export interface FrameParserStackProps extends cdk.StackProps {
   cluster: ecs.Cluster;
   privateSubnets: ec2.SubnetSelection;
+  rawFrameBucket: s3.Bucket;
 }
 
 export class FrameParserStack extends cdk.Stack {
   public readonly frameParserFargateTaskRole: iam.IRole;
   public readonly kvsFrameParserLogGroup: logs.LogGroup;
   public readonly fargateAutoScalerFunction: lambda.Function;
-  public readonly rawFrameBucket: s3.Bucket;
 
   constructor(scope: cdk.Construct, id: string, props: FrameParserStackProps) {
     super(scope, id, props);
@@ -30,20 +30,6 @@ export class FrameParserStack extends cdk.Stack {
       actions: ["kinesisvideo:DescribeStream", "kinesisvideo:Get*"],
     });
 
-    // Create S3 bucket for storing raw image frame extracted from KVS
-    const rawFrameBucket = new s3.Bucket(this, "RawFrameBucket", {
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      lifecycleRules: [
-        {
-          enabled: true,
-          expiration: cdk.Duration.hours(24),
-          abortIncompleteMultipartUploadAfter: cdk.Duration.days(1)
-        }
-      ]
-    });
-    this.rawFrameBucket = rawFrameBucket;
-
     const frameParserTaskDef = new ecs.FargateTaskDefinition(
       this,
       "KVSFrameParserFargateTaskDef",
@@ -54,7 +40,7 @@ export class FrameParserStack extends cdk.Stack {
     );
 
     frameParserTaskDef.addToTaskRolePolicy(kvsReadPolicy);
-    rawFrameBucket.grantPut(frameParserTaskDef.taskRole);
+    props.rawFrameBucket.grantPut(frameParserTaskDef.taskRole);
     this.frameParserFargateTaskRole = frameParserTaskDef.taskRole;
 
     const kvsFrameParserLogGroup = new logs.LogGroup(this, "KvsFrameParserLogGroup", {
@@ -72,7 +58,7 @@ export class FrameParserStack extends cdk.Stack {
         }),
         environment: {
           CAMERA_NAME: "kvs_example_camera_stream",
-          S3_BUCKET_NAME: rawFrameBucket.bucketName,
+          S3_BUCKET_NAME: props.rawFrameBucket.bucketName,
           AWS_DEFAULT_REGION: "us-west-2",
           PROCESS_RATE_IN_FPS: "1"
         },

@@ -21,13 +21,13 @@ import * as events from "@aws-cdk/aws-lambda-event-sources";
 export interface FrameProcessorStackProps extends StackProps {
   targetGqlApi: appsync.GraphqlApi;
   cognitoAuthRole: iam.Role;
-  rawFrameBucket: s3.Bucket;
 }
 
 export class FrameProcessorStack extends Stack {
   public readonly frameProcessorFunction: lambda.Function;
   public readonly faceDetectorFunction: lambda.Function;
   public readonly newFrameConsumer: kinesis.CfnStreamConsumer;
+  public rawFrameBucket: s3.Bucket;
   public processedframeBucket: s3.Bucket;
 
   constructor(
@@ -36,6 +36,20 @@ export class FrameProcessorStack extends Stack {
     props: FrameProcessorStackProps
   ) {
     super(scope, id, props);
+
+    // Create S3 bucket for storing raw image frame extracted from KVS
+    const rawFrameBucket = new s3.Bucket(this, "RawFrameBucket", {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      lifecycleRules: [
+        {
+          enabled: true,
+          expiration: Duration.hours(24),
+          abortIncompleteMultipartUploadAfter: Duration.days(1)
+        }
+      ]
+    });
+    this.rawFrameBucket = rawFrameBucket;
 
     // When frame is uploaded to the raw frame bucket, an event message will be sent from S3 -> SNS -> SQS, then picked up
     // by the PPE Lambda function
@@ -46,7 +60,7 @@ export class FrameProcessorStack extends Stack {
       visibilityTimeout: Duration.seconds(10),
     });
     newFrameTopic.addSubscription(new sub.SqsSubscription(newFrameQueue));
-    props.rawFrameBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SnsDestination(newFrameTopic));
+    rawFrameBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SnsDestination(newFrameTopic));
 
     // Create S3 bucket for storing the frames
     const processedFrameBucket = new s3.Bucket(this, "FrameBucket", {
@@ -81,6 +95,7 @@ export class FrameProcessorStack extends Stack {
         },
       ],
     });
+    this.processedframeBucket = processedFrameBucket;
 
     const violationAlarmTopic = new sns.Topic(this, "PPEViolationTopic", {
       displayName: "PPE Violation Alarm Topic"
@@ -144,7 +159,7 @@ export class FrameProcessorStack extends Stack {
     ppeProcessorFunction.node.addDependency(processedFrameBucket);
 
     // Grant access to the Lambda function
-    props.rawFrameBucket.grantRead(ppeProcessorFunction);
+    rawFrameBucket.grantRead(ppeProcessorFunction);
     processedFrameBucket.grantPut(ppeProcessorFunction);
     violationAlarmTopic.grantPublish(ppeProcessorFunction);
 
