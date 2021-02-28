@@ -1,0 +1,14 @@
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key" : {
+        "cameraId" : $util.dynamodb.toDynamoDBJson($context.arguments.cameraId),
+        "ts": $util.dynamodb.toDynamoDBJson($context.arguments.ts)
+    },
+    "update" : {
+        "expression" : "SET persons = :persons",
+        "expressionValues": {
+            ":persons" : $util.dynamodb.toList($context.arguments.persons),
+        }
+    }
+}
