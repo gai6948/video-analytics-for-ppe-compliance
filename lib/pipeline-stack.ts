@@ -51,10 +51,10 @@ export class PipelineStack extends Stack {
       selfMutating: true
     });
 
-    // const deploymentStage = new VideoAnalyticsDeploymentStage(this, "Prod", {
-    //   env: { region: "us-west-2" },
-    // });
-    // cdkPipeline.addApplicationStage(deploymentStage);
+    const deploymentStage = new VideoAnalyticsDeploymentStage(this, "Prod", {
+      env: { region: "us-west-2" },
+    });
+    cdkPipeline.addApplicationStage(deploymentStage);
 
     new CfnOutput(this, "CodeCommitRepoSshUrl", {
       value: repository.repositoryCloneUrlSsh,

@@ -8,13 +8,13 @@ import {
 } from "@aws-cdk/core";
 import * as appsync from "@aws-cdk/aws-appsync";
 import * as cognito from "@aws-cdk/aws-cognito";
-// import * as kinesis from "@aws-cdk/aws-kinesis";
+import * as kinesis from "@aws-cdk/aws-kinesis";
 // import * as firehose from "@aws-cdk/aws-kinesisfirehose";
 import * as iam from "@aws-cdk/aws-iam";
 import * as dynamodb from "@aws-cdk/aws-dynamodb";
 import * as es from "@aws-cdk/aws-elasticsearch";
 // import * as s3 from "@aws-cdk/aws-s3";
-// import * as cr from "@aws-cdk/custom-resources";
+import * as cr from "@aws-cdk/custom-resources";
 // import * as pythonLambda from "@aws-cdk/aws-lambda-python";
 // import * as lambda from "@aws-cdk/aws-lambda";
 
@@ -202,15 +202,6 @@ export class GraphQLStack extends Stack {
       responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultList(),
     });
 
-    // cameraFrameDataSource.createResolver({
-    //   typeName: "Mutation",
-    //   fieldName: "updateFrame",
-    //   requestMappingTemplate: appsync.MappingTemplate.fromFile(
-    //     "./src/graphql/vtl/updateFrame.vtl"
-    //   ),
-    //   responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
-    // });
-
     const ppeAlarmDataSource = appsyncAPI.addDynamoDbDataSource(
       "PPEAlarmTableDatasource",
       ppeAlarmTable,
@@ -229,15 +220,15 @@ export class GraphQLStack extends Stack {
       responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
     });
 
-    const updateFrameFunction = new appsync.AppsyncFunction(this, "UpdateFrameFunction", {
-      api: appsyncAPI,
-      dataSource: cameraFrameDataSource,
-      name: 'updateFrameFunction',
-      requestMappingTemplate: appsync.MappingTemplate.fromFile(
-        "./src/graphql/vtl/updateFrameRequest.vtl"
-      ),
-      responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
-    });
+    // const updateFrameFunction = new appsync.AppsyncFunction(this, "UpdateFrameFunction", {
+    //   api: appsyncAPI,
+    //   dataSource: cameraFrameDataSource,
+    //   name: 'updateFrameFunction',
+    //   requestMappingTemplate: appsync.MappingTemplate.fromFile(
+    //     "./src/graphql/vtl/updateFrameRequest.vtl"
+    //   ),
+    //   responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
+    // });
 
     const ppeAlarmResolver = new appsync.Resolver(this, "PPEAlarmResolver", {
       api: appsyncAPI,
@@ -245,7 +236,7 @@ export class GraphQLStack extends Stack {
       typeName: 'Mutation',
       pipelineConfig: [
         newAlarmFunction,
-        updateFrameFunction
+        // updateFrameFunction
       ],
       requestMappingTemplate: appsync.MappingTemplate.fromString('{}'),
       responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
@@ -260,27 +251,27 @@ export class GraphQLStack extends Stack {
     //   responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
     // });
     
-    // const esDomain = new es.Domain(this, "ESDomain", {
-    //   version: es.ElasticsearchVersion.V7_1,
-    //   enforceHttps: true,
-    //   nodeToNodeEncryption: true,
-    //   encryptionAtRest: {
-    //     enabled: true,
-    //   },
-    //   fineGrainedAccessControl: {
-    //     masterUserName: "monitor-admin",
-    //   },
-    //   logging: {
-    //     auditLogEnabled: true,
-    //   },
-    // });
+    const esDomain = new es.Domain(this, "ESDomain", {
+      version: es.ElasticsearchVersion.V7_1,
+      enforceHttps: true,
+      nodeToNodeEncryption: true,
+      encryptionAtRest: {
+        enabled: true,
+      },
+      fineGrainedAccessControl: {
+        masterUserName: "monitor-admin",
+      },
+      logging: {
+        auditLogEnabled: true,
+      },
+    });
 
-    // this.esDomain = esDomain;
+    this.esDomain = esDomain;
 
-    // // Create a Kinesis Data Stream for replicate frame data written to DynamoDB
-    // const replicationStream = new kinesis.Stream(this, "replicationStream", {
-    //   shardCount: 1,
-    // });
+    // Create a Kinesis Data Stream for replicate frame data written to DynamoDB
+    const replicationStream = new kinesis.Stream(this, "replicationStream", {
+      shardCount: 1,
+    });
 
     // // Lambda handler to transform data in firehose, and delete DDB entries
     // const transformerLambda = new pythonLambda.PythonFunction(
@@ -417,63 +408,63 @@ export class GraphQLStack extends Stack {
     //   }
     // );
 
-    // const cfnDDBServRole = new iam.CfnServiceLinkedRole(
-    //   this,
-    //   "DDBServiceLinkedRole",
-    //   {
-    //     awsServiceName: "kinesisreplication.dynamodb.amazonaws.com",
-    //   }
-    // );
+    const cfnDDBServRole = new iam.CfnServiceLinkedRole(
+      this,
+      "DDBServiceLinkedRole",
+      {
+        awsServiceName: "kinesisreplication.dynamodb.amazonaws.com",
+      }
+    );
 
     // deliveryStream.node.addDependency(firehoseRole);
 
-    // const ddbToKinesis = new cr.AwsCustomResource(
-    //   this,
-    //   "CustomResourceDDBtoKinesis",
-    //   {
-    //     policy: cr.AwsCustomResourcePolicy.fromStatements([
-    //       new iam.PolicyStatement({
-    //         actions: [
-    //           "dynamodb:EnableKinesisStreamingDestination",
-    //           "dynamodb:DisableKinesisStreamingDestination",
-    //           "dynamodb:DescribeKinesisStreamingDestination",
-    //         ],
-    //         effect: iam.Effect.ALLOW,
-    //         resources: [cameraFrameTable.tableArn],
-    //       }),
-    //       new iam.PolicyStatement({
-    //         actions: ["kinesis:*"],
-    //         effect: iam.Effect.ALLOW,
-    //         resources: [replicationStream.streamArn],
-    //       }),
-    //     ]),
-    //     onCreate: {
-    //       service: "DynamoDB",
-    //       action: "enableKinesisStreamingDestination",
-    //       parameters: {
-    //         StreamArn: replicationStream.streamArn,
-    //         TableName: cameraFrameTable.tableName,
-    //       },
-    //       physicalResourceId: cr.PhysicalResourceId.of(Date.now().toString()),
-    //     },
-    //     onDelete: {
-    //       service: "DynamoDB",
-    //       action: "disableKinesisStreamingDestination",
-    //       parameters: {
-    //         StreamArn: replicationStream.streamArn,
-    //         TableName: cameraFrameTable.tableName,
-    //       },
-    //       physicalResourceId: cr.PhysicalResourceId.of(Date.now().toString()),
-    //     },
-    //     installLatestAwsSdk: true,
-    //   }
-    // );
+    const ddbToKinesis = new cr.AwsCustomResource(
+      this,
+      "CustomResourceDDBtoKinesis",
+      {
+        policy: cr.AwsCustomResourcePolicy.fromStatements([
+          new iam.PolicyStatement({
+            actions: [
+              "dynamodb:EnableKinesisStreamingDestination",
+              "dynamodb:DisableKinesisStreamingDestination",
+              "dynamodb:DescribeKinesisStreamingDestination",
+            ],
+            effect: iam.Effect.ALLOW,
+            resources: [cameraFrameTable.tableArn],
+          }),
+          new iam.PolicyStatement({
+            actions: ["kinesis:*"],
+            effect: iam.Effect.ALLOW,
+            resources: [replicationStream.streamArn],
+          }),
+        ]),
+        onCreate: {
+          service: "DynamoDB",
+          action: "enableKinesisStreamingDestination",
+          parameters: {
+            StreamArn: replicationStream.streamArn,
+            TableName: cameraFrameTable.tableName,
+          },
+          physicalResourceId: cr.PhysicalResourceId.of(Date.now().toString()),
+        },
+        onDelete: {
+          service: "DynamoDB",
+          action: "disableKinesisStreamingDestination",
+          parameters: {
+            StreamArn: replicationStream.streamArn,
+            TableName: cameraFrameTable.tableName,
+          },
+          physicalResourceId: cr.PhysicalResourceId.of(Date.now().toString()),
+        },
+        installLatestAwsSdk: true,
+      }
+    );
 
-    // ddbToKinesis.node.addDependency(cameraFrameTable);
-    // ddbToKinesis.node.addDependency(replicationStream);
+    ddbToKinesis.node.addDependency(cameraFrameTable);
+    ddbToKinesis.node.addDependency(replicationStream);
 
-    // cameraFrameTable.grantFullAccess(ddbToKinesis);
-    // replicationStream.grant(ddbToKinesis, "*");
+    cameraFrameTable.grantFullAccess(ddbToKinesis);
+    replicationStream.grant(ddbToKinesis, "*");
 
     new CfnOutput(this, "GraphQLAPIUrl", {
       value: appsyncAPI.graphqlUrl,
@@ -502,18 +493,18 @@ export class GraphQLStack extends Stack {
       description: "Id of the Cognito App Client for monitoring portal",
     });
 
-    // new CfnOutput(this, "AESDomainEndpoint", {
-    //   value: esDomain.domainName,
-    //   description: "Endpoint for the AES Domain",
-    // });
+    new CfnOutput(this, "AESDomainEndpoint", {
+      value: esDomain.domainName,
+      description: "Endpoint for the AES Domain",
+    });
 
-    // if (esDomain.masterUserPassword) {
-    //   new CfnOutput(this, "AESDomainDefaultPassword", {
-    //     value: esDomain.masterUserPassword.toString(),
-    //     description:
-    //       "Default password or the AES Domain, managed by Secrets Manager",
-    //   });
-    // }
+    if (esDomain.masterUserPassword) {
+      new CfnOutput(this, "AESDomainDefaultPassword", {
+        value: esDomain.masterUserPassword.toString(),
+        description:
+          "Default password or the AES Domain, managed by Secrets Manager",
+      });
+    }
 
     // new CfnOutput(this, "FirehoseBackupS3BucketName", {
     //   value: firehoseBackupBucket.bucketName,
