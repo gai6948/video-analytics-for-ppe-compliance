@@ -114,7 +114,7 @@ export class GraphQLStack extends Stack {
     );
 
     const appsyncAPI = new appsync.GraphqlApi(this, "AppSyncAPI", {
-      name: "video-analytics-gql-api",
+      name: "video-analytics-for-ppe-gql-api",
       xrayEnabled: true,
       schema: appsync.Schema.fromAsset("./src/graphql/schema.graphql"),
       logConfig: {
