@@ -59,7 +59,7 @@ export class FrameProcessorStack extends Stack {
       encryption: sqs.QueueEncryption.UNENCRYPTED,
       visibilityTimeout: Duration.seconds(10),
     });
-    newFrameTopic.addSubscription(new sub.SqsSubscription(newFrameQueue));
+    newFrameTopic.addSubscription(new sub.SqsSubscription(newFrameQueue, { rawMessageDelivery: true }));
     rawFrameBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SnsDestination(newFrameTopic));
 
     // Create S3 bucket for storing the frames
