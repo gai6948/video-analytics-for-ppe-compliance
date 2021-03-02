@@ -159,7 +159,7 @@ export class FrameProcessorStack extends Stack {
     // Create the face detection Lambda
     const faceDetectorFunction = new pythonLambda.PythonFunction(this, "FaceDetector", {
       entry: "./src/lambda/face-detector-function",
-      index: "lambda.py",
+      index: "index.py",
       handler: "handler",
       runtime: lambda.Runtime.PYTHON_3_8,
       timeout: Duration.seconds(30),

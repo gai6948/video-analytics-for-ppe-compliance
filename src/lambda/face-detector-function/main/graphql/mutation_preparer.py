@@ -9,7 +9,7 @@ logger = Logger(service='face-detector', child=True)
 tracer = Tracer(service='face-detector')
 
 @tracer.capture_method(capture_response=False)
-def prepare_mutation(message: dict, face_res: list) -> Tuple[dict, dict]:
+def prepare_mutation(message: dict, face_res: list, persons_detected: bool) -> Tuple[dict, dict]:
     start_time = timeit.default_timer()
 
     mutation = """
@@ -38,28 +38,32 @@ def prepare_mutation(message: dict, face_res: list) -> Tuple[dict, dict]:
     persons = []
     person_count = 0
 
-    for detected_face in face_res:
-        person = {
-            "id": person_count,
-            "boundingBox": {
-                "width": detected_face["SearchedFaceBoundingBox"]["Width"],
-                "height": detected_face["SearchedFaceBoundingBox"]["Height"],
-                "left": detected_face["SearchedFaceBoundingBox"]["Left"],
-                "top": detected_face["SearchedFaceBoundingBox"]["Top"],
-            },
-            "missingMask": message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingMask"],
-            "missingHelmet": message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingHelmet"],
-            "faceId": detected_face["FaceMatches"][0]["Face"]["FaceId"]
-        }
-        persons.append(person)
-        person_count += 1
+    if persons_detected:
+        sts = "ACTIVE" 
+        for detected_face in face_res:
+            person = {
+                "id": person_count,
+                "boundingBox": {
+                    "width": detected_face["SearchedFaceBoundingBox"]["Width"],
+                    "height": detected_face["SearchedFaceBoundingBox"]["Height"],
+                    "left": detected_face["SearchedFaceBoundingBox"]["Left"],
+                    "top": detected_face["SearchedFaceBoundingBox"]["Top"],
+                },
+                "missingMask": message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingMask"],
+                "missingHelmet": message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingHelmet"],
+                "faceId": detected_face["FaceMatches"][0]["Face"]["FaceId"]
+            }
+            persons.append(person)
+            person_count += 1
+    else:
+        sts = "PENDING_REVIEW"
 
     variables = {
         "cameraId": cameraId,
         "ts": ts,
         "persons": persons,
         "s3url": message['s3url'],
-        "status": "ACTIVE"
+        "status": sts
     }
 
     logger.info(

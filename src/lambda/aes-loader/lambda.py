@@ -2,6 +2,7 @@ import base64
 
 def handler(event, context):
     output = []
+    print(event)
     for record in event['records']:
         data = base64.b64decode(record["data"])
         print(data)     

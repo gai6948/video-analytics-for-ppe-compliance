@@ -2,6 +2,7 @@ import json
 import os
 import cv2
 from typing import Any, Dict
+import botocore
 
 from aws_lambda_powertools.logging import Logger
 from aws_lambda_powertools.tracing import Tracer
@@ -26,7 +27,7 @@ s3_client = None
 logger = Logger(service='face-detector', level='INFO')
 tracer = Tracer(service='face-detector')
 
-
+@tracer.capture_lambda_handler
 def handler(event: Dict[str, Any], context: LambdaContext):
     for record in event['Records']:
         message = record["Sns"]["Message"]
@@ -43,20 +44,19 @@ def handler(event: Dict[str, Any], context: LambdaContext):
             for ppl in msg["ppeResult"]["personsWithoutRequiredEquipment"]:
                 sub_image, sub_frame_size = cropper.crop_image(resized_src_frame, ppl["boundingBox"])
                 sub_frame_size_list.append(sub_frame_size)
-                face_detection_res = detector.submit_job(sub_image, MIN_CONFIDENCE_THRESHOLD, rek_client, FACE_COLLECTION_ID)
+                try:
+                    face_detection_res = detector.submit_job(sub_image, MIN_CONFIDENCE_THRESHOLD, rek_client, FACE_COLLECTION_ID)
+                except botocore.InvalidParameterException:
+                    logger.info("No faces detected in image")
+                    mutation, variables = mutation_preparer.prepare_mutation(msg, [], False)
+                    mutation_executor.make_mutation(mutation, variables, GRAPHQL_API_ENDPOINT)      
                 resp_list.append(face_detection_res)
             drawn_frame_path = '/tmp/' + old_frame_key.split('.')[0] + '.png'
             drawer.draw_bounding_box(resp_list, sub_frame_size_list, resized_src_frame, drawn_frame_path)
             output_frame_filepath = converter.convert_frame(drawn_frame_path, '.webp')
             frame_uploader.upload_frame(FRAME_BUCKET_NAME, old_frame_key, output_frame_filepath, s3_client)
-            mutation, variables = mutation_preparer.prepare_mutation(msg, resp_list)
+            mutation, variables = mutation_preparer.prepare_mutation(msg, resp_list, True)
             mutation_executor.make_mutation(mutation, variables, GRAPHQL_API_ENDPOINT)
         else:
             logger.info("No PPE violation in alert, exiting...")
-
-dst_dirname = './test/data'
-dst_filepath = os.path.join(dst_dirname, 'resp.json')
-with open(dst_filepath, 'r') as fd:
-    msg = json.load(fd)
-    ev = json.dumps(msg)
-handler(ev, '')
+        
