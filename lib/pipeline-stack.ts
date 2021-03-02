@@ -39,6 +39,7 @@ export class PipelineStack extends Stack {
         installCommands: [
           "npm ci",
           "npm i --save-dev esbuild@0",
+          "docker login --username gc6948 -p 404cb1cb-c7c0-491d-a88d-0d43dd7b0460"
         ],
         buildCommands: [
           "echo Preparing CDK deployment...",
