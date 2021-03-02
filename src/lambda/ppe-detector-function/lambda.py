@@ -1,5 +1,5 @@
 import os
-import base64
+import json
 from typing import Any, Dict
 from aws_lambda_powertools.logging import Logger
 from aws_lambda_powertools.tracing import Tracer
@@ -25,7 +25,8 @@ tracer = Tracer(service='ppe-detector')
 def handler(event: Dict[str, Any], context: LambdaContext):
     for record in event["Records"]:
         logger.info(record)
-        for s3e in record["body"]["Message"]["Records"]:
+        rec = json.loads(record["body"])
+        for s3e in rec["Message"]["Records"]:
             src_s3bucket = s3e["s3"]["bucket"]["body"]["name"]
             src_s3key = s3e["s3"]["object"]["key"]
             frame_bytes, metadata = frame_downloader.download_frame(src_s3bucket, src_s3key, s3_client)

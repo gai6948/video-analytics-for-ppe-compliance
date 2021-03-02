@@ -12,7 +12,6 @@ import * as iam from "@aws-cdk/aws-iam";
 import * as s3 from "@aws-cdk/aws-s3";
 import * as s3n from "@aws-cdk/aws-s3-notifications";
 import * as appsync from "@aws-cdk/aws-appsync";
-import * as assets from "@aws-cdk/aws-s3-assets";
 import * as sns from "@aws-cdk/aws-sns";
 import * as sub from "@aws-cdk/aws-sns-subscriptions";
 import * as sqs from "@aws-cdk/aws-sqs";
@@ -100,29 +99,6 @@ export class FrameProcessorStack extends Stack {
     const violationAlarmTopic = new sns.Topic(this, "PPEViolationTopic", {
       displayName: "PPE Violation Alarm Topic"
     });
-
-    // Since the Lambda layer package is >50 MB, we need to bundle it as asset to S3
-    // const pythonLambdaLayerAsset = new assets.Asset(
-    //   this,
-    //   "PythonLayerPackage",
-    //   {
-    //     path: `./build/package/`,
-    //   }
-    // );
-
-    // Create layer that is common across Python Lambda functions
-    // const pythondetectorLayer = new lambda.LayerVersion(
-    //   this,
-    //   "PythonDetectorLayerVersion",
-    //   {
-    //     code: lambda.Code.fromBucket(
-    //       pythonLambdaLayerAsset.bucket,
-    //       pythonLambdaLayerAsset.s3ObjectKey
-    //     ),
-    //     compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
-    //     description: "Common Python packages for image processing",
-    //   }
-    // );
 
     const pythonDetectorLayer = new pythonLambda.PythonLayerVersion(this, "PythonDetectorLayer", {
       entry: "./src/lambda/layers/detectors-common/",

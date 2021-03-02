@@ -9,14 +9,13 @@ import {
 import * as appsync from "@aws-cdk/aws-appsync";
 import * as cognito from "@aws-cdk/aws-cognito";
 import * as kinesis from "@aws-cdk/aws-kinesis";
-// import * as firehose from "@aws-cdk/aws-kinesisfirehose";
 import * as iam from "@aws-cdk/aws-iam";
 import * as dynamodb from "@aws-cdk/aws-dynamodb";
 import * as es from "@aws-cdk/aws-elasticsearch";
-// import * as s3 from "@aws-cdk/aws-s3";
 import * as cr from "@aws-cdk/custom-resources";
-// import * as pythonLambda from "@aws-cdk/aws-lambda-python";
-// import * as lambda from "@aws-cdk/aws-lambda";
+import * as pythonLambda from "@aws-cdk/aws-lambda-python";
+import * as lambda from "@aws-cdk/aws-lambda";
+import * as events from "@aws-cdk/aws-lambda-event-sources";
 
 export interface GraphQLStackProps extends StackProps {}
 
@@ -210,38 +209,6 @@ export class GraphQLStack extends Stack {
       }
     );
 
-    // const newAlarmFunction = new appsync.AppsyncFunction(this, "NewPPEAlarmFunction", {
-    //   api: appsyncAPI,
-    //   dataSource: ppeAlarmDataSource,
-    //   name: 'ppeAlarmFunction',
-    //   requestMappingTemplate: appsync.MappingTemplate.fromFile(
-    //     "./src/graphql/vtl/newAlarmRequest.vtl"
-    //   ),
-    //   responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
-    // });
-
-    // const updateFrameFunction = new appsync.AppsyncFunction(this, "UpdateFrameFunction", {
-    //   api: appsyncAPI,
-    //   dataSource: cameraFrameDataSource,
-    //   name: 'updateFrameFunction',
-    //   requestMappingTemplate: appsync.MappingTemplate.fromFile(
-    //     "./src/graphql/vtl/updateFrameRequest.vtl"
-    //   ),
-    //   responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
-    // });
-
-    // const ppeAlarmResolver = new appsync.Resolver(this, "PPEAlarmResolver", {
-    //   api: appsyncAPI,
-    //   fieldName: 'newAlarm',
-    //   typeName: 'Mutation',
-    //   pipelineConfig: [
-    //     newAlarmFunction,
-    //     // updateFrameFunction
-    //   ],
-    //   requestMappingTemplate: appsync.MappingTemplate.fromString('{}'),
-    //   responseMappingTemplate: appsync.MappingTemplate.fromString('$util.toJson($context.prev.result)')
-    // });
-
     ppeAlarmDataSource.createResolver({
       typeName: "Mutation",
       fieldName: "newAlarm",
@@ -273,140 +240,26 @@ export class GraphQLStack extends Stack {
       shardCount: 1,
     });
 
-    // // Lambda handler to transform data in firehose, and delete DDB entries
-    // const transformerLambda = new pythonLambda.PythonFunction(
-    //   this,
-    //   "FirehoseTransformerFunction",
-    //   {
-    //     entry: "./src/lambda/firehose-transformer",
-    //     handler: "handler",
-    //     index: "lambda.py",
-    //     runtime: lambda.Runtime.PYTHON_3_8,
-    //     timeout: Duration.seconds(10),
-    //   }
-    // );
+    // Lambda handler to load data to AES, and delete DDB entries
+    const aesLoaderLambda = new pythonLambda.PythonFunction(
+      this,
+      "FirehoseTransformerFunction",
+      {
+        entry: "./src/lambda/aes-loader",
+        handler: "handler",
+        index: "lambda.py",
+        runtime: lambda.Runtime.PYTHON_3_8,
+        timeout: Duration.seconds(10),
+      }
+    );
 
-    // // Create an IAM role for Kinesis Firehose to read from Kinesis Stream and write to ElasticSearch
-    // const firehoseRole = new iam.Role(this, "FirehoseRole", {
-    //   assumedBy: new iam.ServicePrincipal("firehose.amazonaws.com"),
-    //   description: "Allow Firehose to read from Kinesis Stream",
-    // });
-
-    // firehoseRole.node.addDependency(replicationStream);
-    // firehoseRole.node.addDependency(esDomain);
-
-    // firehoseRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ["kinesis:Get*", "kinesis:List*", "kinesis:Describe*"],
-    //     resources: [
-    //       replicationStream.streamArn,
-    //       replicationStream.streamArn + "/*",
-    //     ],
-    //     sid: "AllowKinesisRead",
-    //   })
-    // );
-
-    // replicationStream.grantRead(firehoseRole);
-
-    // firehoseRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: [
-    //       "es:DescribeElasticsearchDomain",
-    //       "es:DescribeElasticsearchDomains",
-    //       "es:DescribeElasticsearchDomainConfig",
-    //       "es:ESHttpPost",
-    //       "es:ESHttpPut",
-    //       "es:ESHttpGet",
-    //     ],
-    //     resources: [esDomain.domainArn, esDomain.domainArn + "/*"],
-    //     sid: "AllowESWrite",
-    //   })
-    // );
-
-    // // Create an S3 bucket in case of failed delivery for Firehose
-    // const firehoseBackupBucket = new s3.Bucket(this, "FirehoseBackupBucket", {
-    //   blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-    //   encryption: s3.BucketEncryption.S3_MANAGED,
-    // });
-
-    // firehoseRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: [
-    //       "s3:AbortMultipartUpload",
-    //       "s3:GetBucketLocation",
-    //       "s3:GetObject",
-    //       "s3:ListBucket",
-    //       "s3:ListBucketMultipartUploads",
-    //       "s3:PutObject",
-    //     ],
-    //     resources: [
-    //       firehoseBackupBucket.bucketArn,
-    //       firehoseBackupBucket.bucketArn + "/*",
-    //     ],
-    //     sid: "AllowS3WriteToBackupBucket",
-    //   })
-    // );
-
-    // firehoseBackupBucket.grantReadWrite(firehoseRole);
-    // transformerLambda.grantInvoke(firehoseRole);
-
-    // // Create a delivery stream from Kinesis to AES
-    // const deliveryStream = new firehose.CfnDeliveryStream(
-    //   this,
-    //   "DeliveryStream",
-    //   {
-    //     deliveryStreamType: "KinesisStreamAsSource",
-    //     kinesisStreamSourceConfiguration: {
-    //       kinesisStreamArn: replicationStream.streamArn,
-    //       roleArn: firehoseRole.roleArn,
-    //     },
-    //     elasticsearchDestinationConfiguration: {
-    //       indexName: "ppe-result*",
-    //       roleArn: firehoseRole.roleArn,
-    //       domainArn: esDomain.domainArn,
-    //       s3Configuration: {
-    //         bucketArn: firehoseBackupBucket.bucketArn,
-    //         roleArn: firehoseRole.roleArn,
-    //         bufferingHints: {
-    //           intervalInSeconds: 300,
-    //           sizeInMBs: 5,
-    //         },
-    //       },
-    //       s3BackupMode: "FailedDocumentsOnly",
-    //       indexRotationPeriod: "OneDay",
-    //       processingConfiguration: {
-    //         enabled: true,
-    //         processors: [
-    //           {
-    //             type: "Lambda",
-    //             parameters: [
-    //               {
-    //                 parameterName: "LambdaArn",
-    //                 parameterValue: transformerLambda.functionArn,
-    //               },
-    //               {
-    //                 parameterName: "RoleArn",
-    //                 parameterValue: firehoseRole.roleArn,
-    //               },
-    //               {
-    //                 parameterName: "BufferIntervalInSeconds",
-    //                 parameterValue: "300",
-    //               },
-    //               {
-    //                 parameterName: "BufferSizeInMBs",
-    //                 parameterValue: "3",
-    //               },
-    //               {
-    //                 parameterName: "NumberOfRetries",
-    //                 parameterValue: "1",
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     },
-    //   }
-    // );
+    aesLoaderLambda.addEventSource(new events.KinesisEventSource(replicationStream, {
+      startingPosition: lambda.StartingPosition.LATEST,
+      batchSize: 100,
+      enabled: true,
+      bisectBatchOnError: true,
+      maxBatchingWindow: Duration.minutes(5)
+    }));
 
     const cfnDDBServRole = new iam.CfnServiceLinkedRole(
       this,
@@ -415,8 +268,6 @@ export class GraphQLStack extends Stack {
         awsServiceName: "kinesisreplication.dynamodb.amazonaws.com",
       }
     );
-
-    // deliveryStream.node.addDependency(firehoseRole);
 
     const ddbToKinesis = new cr.AwsCustomResource(
       this,
@@ -505,11 +356,5 @@ export class GraphQLStack extends Stack {
           "Default password or the AES Domain, managed by Secrets Manager",
       });
     }
-
-    // new CfnOutput(this, "FirehoseBackupS3BucketName", {
-    //   value: firehoseBackupBucket.bucketName,
-    //   description:
-    //     "When Firehose cannot deliver data to ElasticSearch, data will be delivered to this S3 bucket",
-    // });
   }
 }
