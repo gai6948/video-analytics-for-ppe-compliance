@@ -111,7 +111,7 @@ export class FrameProcessorStack extends Stack {
       "PPEFrameProcessor",
       {
         entry: "./src/lambda/ppe-detector-function",
-        index: "lambda.py",
+        index: "index.py",
         handler: "handler",
         runtime: lambda.Runtime.PYTHON_3_8,
         timeout: Duration.seconds(7),
