@@ -29,7 +29,7 @@ def upload_s3(tmp_filename: str, ppl_without_equipment: int, s3_client: None) ->
 
         s3_res = s3_client.upload_file(
             Filename=tmp_filename,
-            Bucket=os.environ["S3_BUCKET"],
+            Bucket=os.environ["PROCESSED_S3_BUCKET"],
             Key=tmp_filename[5:],
             ExtraArgs={
                 "Metadata": {

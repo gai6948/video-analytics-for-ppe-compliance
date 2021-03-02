@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "ddfb2de5-3ff4-41db-a912-d4fb1360791d",
+      "receiptHandle": "AQEBdpeBnUiK4v1XtjSLm+ovPclpnE5fpEOS2Q7TDfoXIFmMXgKI3PLVTpawKMh/Oo8l72WauLJ/99tXIhq5ZqF/u/MUoniDJogIbN7MKoO6ZwY3x0KHTo0IwjPNKjOQIHzyc64lhtC7UmH0ZrTS1Kqa607eZ8FeeG4w8Wo0zksAi4zh+hdV1cR02xgjzNAu+SBow0+Oev+X8r7uC/aK6bVYljqe2DGWYkQa5Uh44OYZYxoCR5nIA9RGv/rnjPg1AgCwXlgIJ0zkn4Ql6YAp9kCvXitPPMXRMrEdpBJAiCRKxI68mG026xnxq2BJKtHhSTOu4Apmlk9PxenHTsQqBjkSuDatvllPmD6/UxwwAa5dx/hiEdH4M/Ypinv3qMpMnK3YP8NyA9ejGIMwVRVgvr1gXTgQf7NMDWEJzREJNOsQziZCR1ZrvWXm/4mV8qfLMVj4QqyHzfZFAacXGacjcwBADw==",
+      "body": "{\n  \"Type\" : \"Notification\",\n  \"MessageId\" : \"8122ddf8-6adf-5587-bf05-854e8ad97e2b\",\n  \"TopicArn\" : \"arn:aws:sns:us-west-2:949970762186:Deployment-FrameProcessorStack-NewFrameTopicAAA7984F-KHCDZQ4OSD1D\",\n  \"Subject\" : \"Amazon S3 Notification\",\n  \"Message\" : \"{\\\"Records\\\":[{\\\"eventVersion\\\":\\\"2.1\\\",\\\"eventSource\\\":\\\"aws:s3\\\",\\\"awsRegion\\\":\\\"us-west-2\\\",\\\"eventTime\\\":\\\"2021-03-01T12:27:48.979Z\\\",\\\"eventName\\\":\\\"ObjectCreated:Put\\\",\\\"userIdentity\\\":{\\\"principalId\\\":\\\"AWS:AROA52LVLPHFEBRSPVAV2:90010d53d35f444281e712567a47ac0d\\\"},\\\"requestParameters\\\":{\\\"sourceIPAddress\\\":\\\"10.0.2.182\\\"},\\\"responseElements\\\":{\\\"x-amz-request-id\\\":\\\"4AH69E3NY7XNCZ2X\\\",\\\"x-amz-id-2\\\":\\\"BJWNxOPsPpFixPK7m7xnqqyIuARzOE08/ee8RzPdZwMlo+R5sJydQythmte5WRmcd2L6wVgGZ99pcy6BNNTMuDCNE6kNOnh9\\\"},\\\"s3\\\":{\\\"s3SchemaVersion\\\":\\\"1.0\\\",\\\"configurationId\\\":\\\"NGFkZmY1ZDUtNWQ0OC00MWI4LWFlOGQtNzZjZGY4MjA2NmQ0\\\",\\\"bucket\\\":{\\\"name\\\":\\\"deployment-frameprocessors-rawframebucketebea79c3-mlvhtw665y4o\\\",\\\"ownerIdentity\\\":{\\\"principalId\\\":\\\"AFWAJMC2OMA1X\\\"},\\\"arn\\\":\\\"arn:aws:s3:::deployment-frameprocessors-rawframebucketebea79c3-mlvhtw665y4o\\\"},\\\"object\\\":{\\\"key\\\":\\\"kvs_example_camera_stream/2021-03-01-12-27-48-858.png\\\",\\\"size\\\":518017,\\\"eTag\\\":\\\"66bae77b07e1e0296172dd8780833a6f\\\",\\\"sequencer\\\":\\\"00603CDDC5C4DD0ABF\\\"}}}]}\",\n  \"Timestamp\" : \"2021-03-01T12:27:50.638Z\",\n  \"SignatureVersion\" : \"1\",\n  \"Signature\" : \"J6qAcYSxS54SGivDAvVTSuxk5GzwRhf4bWA9ZXHVI9ECe529oq4RHfzVkhWYs8HAQoK3idRmUOWuSqQTkjJAhku9CKPIQRC9DG7uNkRM+W2nvyib2ptndT3TFn9Hbf0XKoS02TtN82JbBPnVTztCiZvn9iDIlpJFcG1caLjUvWRfQeRMwJlWX430IuDKctzMlJo9R07HAb8jlLeQRj/AGkMjMHHrcGHJnThWUhAdd9d+6eH7IsweHYWBVdQAZcWLEFofCPPX7ougQ2ZomjN2/W9BQ3fNcSZAQkt6O8QjpDUs2JXXTK4Pn4DmExHZb1wnaPzT5CaI4yY7TOrc7kwmig==\",\n  \"SigningCertURL\" : \"https://sns.us-west-2.amazonaws.com/SimpleNotificationService-010a507c1833636cd94bdb98bd93083a.pem\",\n  \"UnsubscribeURL\" : \"https://sns.us-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-west-2:949970762186:Deployment-FrameProcessorStack-NewFrameTopicAAA7984F-KHCDZQ4OSD1D:a98f0ae0-5d4e-43a7-9a3a-3dd175bfcfe3\"\n}",
+      "attributes": {
+        "ApproximateReceiveCount": "27",
+        "SentTimestamp": "1614601670672",
+        "SenderId": "AIDAIYLAVTDLUXBIEIX46",
+        "ApproximateFirstReceiveTimestamp": "1614601670672"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "a31c1706e72c832fb6aea556b57fcac5",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-west-2:949970762186:Deployment-FrameProcessorStack-NewFrameQueue979A986D-B0JN0768ZX55",
+      "awsRegion": "us-west-2"
+    }
+  ]
+}

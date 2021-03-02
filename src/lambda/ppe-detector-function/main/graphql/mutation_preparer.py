@@ -73,7 +73,7 @@ def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_r
 
     variables = {
         "cameraId": camera_name,
-        "s3url": os.environ["S3_BUCKET"] + "/" + filename,
+        "s3url": os.environ["PROCESSED_S3_BUCKET"] + "/" + filename,
         "ts": timestamp,
         "ppeResult": {
             "personsWithRequiredEquipment": pplWithEquipment,

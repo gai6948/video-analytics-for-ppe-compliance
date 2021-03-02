@@ -24,10 +24,11 @@ tracer = Tracer(service='ppe-detector')
 @tracer.capture_lambda_handler
 def handler(event: Dict[str, Any], context: LambdaContext):
     for record in event["Records"]:
-        logger.info(record)
         rec = json.loads(record["body"])
-        for s3e in rec["Message"]["Records"]:
-            src_s3bucket = s3e["s3"]["bucket"]["body"]["name"]
+        s3_msg = json.loads(rec["Message"])
+        for s3e in s3_msg["Records"]:
+            print(s3e)
+            src_s3bucket = s3e["s3"]["bucket"]["name"]
             src_s3key = s3e["s3"]["object"]["key"]
             frame_bytes, metadata = frame_downloader.download_frame(src_s3bucket, src_s3key, s3_client)
             camera_name = src_s3key.split("/")[0]

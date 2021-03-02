@@ -121,8 +121,8 @@ export class FrameProcessorStack extends Stack {
         reservedConcurrentExecutions: 5,
         environment: {
           GRAPHQL_API_ENDPOINT: props.targetGqlApi.graphqlUrl,
-          S3_BUCKET: processedFrameBucket.bucketName,
-          MIN_DETECTION_CONFIDENCE: "70",
+          PROCESSED_S3_BUCKET: processedFrameBucket.bucketName,
+          MIN_DETECTION_CONFIDENCE: "80",
           TARGET_IMAGE_WIDTH: "480",
           TARGET_IMAGE_HEIGHT: "320",
           SNS_TOPIC_ARN: violationAlarmTopic.topicArn

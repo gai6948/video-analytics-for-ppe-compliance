@@ -43,15 +43,6 @@ def make_mutation(mutation: str, variables: dict) -> dict:
         session_token=os.environ["AWS_SESSION_TOKEN"],
     )
 
-    # For local
-    # auth = AWS4Auth(
-    #     credentials.access_key,
-    #     credentials.secret_key,
-    #     aws.region_name,
-    #     'appsync',
-    #     # session_token=credentials.token,
-    # )
-
     transport = RequestsHTTPTransport(
         url=os.environ["GRAPHQL_API_ENDPOINT"],
         headers=headers,
