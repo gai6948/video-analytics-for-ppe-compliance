@@ -29,7 +29,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):
         try:
             s3_msg = json.loads(rec["Message"])
         except KeyError:
-            logger.warn("No message found: " + rec)
+            logger.warn("No message found: " + json.dumps(rec))
             return {
                 "statusCode": 200,
                 "body": {"processed": "true"}
