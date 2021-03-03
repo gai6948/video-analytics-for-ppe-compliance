@@ -44,13 +44,11 @@ def handler(event: Dict[str, Any], context: LambdaContext):
             for ppl in msg["ppeResult"]["personsWithoutRequiredEquipment"]:
                 sub_image, sub_frame_size = cropper.crop_image(resized_src_frame, ppl["boundingBox"])
                 sub_frame_size_list.append(sub_frame_size)
-                try:
-                    face_detection_res = detector.submit_job(sub_image, MIN_CONFIDENCE_THRESHOLD, rek_client, FACE_COLLECTION_ID)
-                except botocore.InvalidParameterException:
-                    logger.info("No faces detected in image")
-                    mutation, variables = mutation_preparer.prepare_mutation(msg, [], False)
-                    mutation_executor.make_mutation(mutation, variables, GRAPHQL_API_ENDPOINT)      
-                resp_list.append(face_detection_res)
+                face_detection_res = detector.submit_job(sub_image, MIN_CONFIDENCE_THRESHOLD, rek_client, FACE_COLLECTION_ID)
+                if face_detection_res == None:
+                    continue
+                else:   
+                    resp_list.append(face_detection_res)
             drawn_frame_path = '/tmp/' + old_frame_key.split('.')[0] + '.png'
             drawer.draw_bounding_box(resp_list, sub_frame_size_list, resized_src_frame, drawn_frame_path)
             output_frame_filepath = converter.convert_frame(drawn_frame_path, '.webp')

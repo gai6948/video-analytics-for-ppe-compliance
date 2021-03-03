@@ -18,15 +18,18 @@ def submit_job(img: ndarray, min_confidence: int, rek_client: None, face_collect
     if not rek_client:
         rek_client = boto3.client("rekognition")
 
-    face_res = rek_client.search_faces_by_image(
-        CollectionId=face_collection,
-        Image={
-            'Bytes': img_str
-        },
-        MaxFaces=1,
-        FaceMatchThreshold=float(min_confidence/100)
-    )
-
+    try:
+        face_res = rek_client.search_faces_by_image(
+            CollectionId=face_collection,
+            Image={
+                'Bytes': img_str
+            },
+            MaxFaces=1,
+            FaceMatchThreshold=float(min_confidence/100)
+        )
+    except rek_client.exceptions.InvalidParameterException as e:
+        logger.warn("No faces detected in image")
+        return None
     logger.info(
         f'Rekognition face search completed after: {timeit.default_timer() - start_time}')
         
