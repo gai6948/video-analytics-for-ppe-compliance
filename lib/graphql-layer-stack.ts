@@ -247,7 +247,7 @@ export class GraphQLStack extends Stack {
       {
         entry: "./src/lambda/aes-loader",
         handler: "handler",
-        index: "lambda.py",
+        index: "index.py",
         runtime: lambda.Runtime.PYTHON_3_8,
         timeout: Duration.seconds(10),
       }
