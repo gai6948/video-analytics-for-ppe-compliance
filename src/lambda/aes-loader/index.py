@@ -2,10 +2,12 @@ import base64
 
 def handler(event, context):
     output = []
-    print(event)
-    for record in event['records']:
-        data = base64.b64decode(record["data"])
-        print(data)     
+    # print(event)
+    for record in event['Records']:
+        data = base64.b64decode(record["kinesis"]["data"])
+        print(data)
+        newItem = data["dynamodb"]["NewImage"]
+        
         # output_record = {
         #     'recordId': record['recordId'],
         #     'result': 'Ok',
