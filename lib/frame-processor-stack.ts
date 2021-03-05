@@ -20,6 +20,7 @@ import * as events from "@aws-cdk/aws-lambda-event-sources";
 export interface FrameProcessorStackProps extends StackProps {
   targetGqlApi: appsync.GraphqlApi;
   cognitoAuthRole: iam.Role;
+  pythonGQLLayer: pythonLambda.PythonLayerVersion;
 }
 
 export class FrameProcessorStack extends Stack {
@@ -117,7 +118,7 @@ export class FrameProcessorStack extends Stack {
         timeout: Duration.seconds(7),
         tracing: lambda.Tracing.ACTIVE,
         retryAttempts: 0,
-        layers: [pythonDetectorLayer],
+        layers: [pythonDetectorLayer, props.pythonGQLLayer],
         reservedConcurrentExecutions: 5,
         environment: {
           GRAPHQL_API_ENDPOINT: props.targetGqlApi.graphqlUrl,
@@ -164,7 +165,7 @@ export class FrameProcessorStack extends Stack {
       runtime: lambda.Runtime.PYTHON_3_8,
       timeout: Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
-      layers: [pythonDetectorLayer],
+      layers: [pythonDetectorLayer, props.pythonGQLLayer],
       memorySize: 256,
       environment: {
         GRAPHQL_API_ENDPOINT: props.targetGqlApi.graphqlUrl,

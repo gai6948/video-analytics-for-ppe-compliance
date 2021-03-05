@@ -25,6 +25,7 @@ export class GraphQLStack extends Stack {
   public cognitoAuthRole: iam.Role;
   public esDomain: es.Domain;
   public cameraFrameTable: dynamodb.Table;
+  public pythonGQLLayer: pythonLambda.PythonLayerVersion;
 
   constructor(scope: Construct, id: string, props?: GraphQLStackProps) {
     super(scope, id, props);
@@ -240,6 +241,14 @@ export class GraphQLStack extends Stack {
       shardCount: 1,
     });
 
+    // Python lambda layer for GQL/REST libraries and middleware
+    const pythonGQLLayer = new pythonLambda.PythonLayerVersion(this, "PythonGQLLayer", {
+      entry: "./src/lambda/layers/python-gql",
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
+      description: "Python Lambda GQL/REST libraries and middleware"
+    });
+    this.pythonGQLLayer = pythonGQLLayer;
+
     // Lambda handler to load data to AES, and delete DDB entries
     const aesLoaderLambda = new pythonLambda.PythonFunction(
       this,
@@ -250,6 +259,10 @@ export class GraphQLStack extends Stack {
         index: "index.py",
         runtime: lambda.Runtime.PYTHON_3_8,
         timeout: Duration.seconds(10),
+        layers: [pythonGQLLayer],
+        environment: {
+          AES_HOST_URL: esDomain.domainEndpoint,
+        }
       }
     );
 

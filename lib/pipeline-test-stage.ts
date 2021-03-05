@@ -24,6 +24,7 @@ export class VideoAnalyticsDeploymentStage extends Stage {
       {
         targetGqlApi: graphQLLayerStack.appsyncAPI,
         cognitoAuthRole: graphQLLayerStack.cognitoAuthRole,
+        pythonGQLLayer: graphQLLayerStack.pythonGQLLayer,
         description:
           "A stack that contains Lambda consumers processing the frames, and S3 buckets storing the frames",
       }
