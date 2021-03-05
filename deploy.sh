@@ -6,3 +6,4 @@ git remote add codecommit $codecommiturl
 git add .
 git commit -m "Initial Commit"
 git push -u codecommit master
+

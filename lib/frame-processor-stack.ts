@@ -37,6 +37,8 @@ export class FrameProcessorStack extends Stack {
   ) {
     super(scope, id, props);
 
+    const detectHelmet: boolean = false;
+
     // Create S3 bucket for storing raw image frame extracted from KVS
     const rawFrameBucket = new s3.Bucket(this, "RawFrameBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -126,7 +128,8 @@ export class FrameProcessorStack extends Stack {
           MIN_DETECTION_CONFIDENCE: "80",
           TARGET_IMAGE_WIDTH: "480",
           TARGET_IMAGE_HEIGHT: "320",
-          SNS_TOPIC_ARN: violationAlarmTopic.topicArn
+          SNS_TOPIC_ARN: violationAlarmTopic.topicArn,
+          DETECT_HELMET: detectHelmet ? "true" : "false"
         },
         maxEventAge: Duration.seconds(60),
         memorySize: 256,

@@ -3,6 +3,7 @@ import {
   Construct,
   Duration,
   RemovalPolicy,
+  SecretValue,
   Stack,
   StackProps,
 } from "@aws-cdk/core";
@@ -16,6 +17,7 @@ import * as cr from "@aws-cdk/custom-resources";
 import * as pythonLambda from "@aws-cdk/aws-lambda-python";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as events from "@aws-cdk/aws-lambda-event-sources";
+import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
 
 export interface GraphQLStackProps extends StackProps {}
 
@@ -220,6 +222,13 @@ export class GraphQLStack extends Stack {
       responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
     });
     
+    const aesPassword = new secretsmanager.Secret(this, "AESMasterPassword", {
+      generateSecretString: {
+        passwordLength: 10
+      }
+    });
+    const cdkSecAESPassword = SecretValue.secretsManager(aesPassword.secretArn);
+
     const esDomain = new es.Domain(this, "ESDomain", {
       version: es.ElasticsearchVersion.V7_1,
       enforceHttps: true,
@@ -229,6 +238,7 @@ export class GraphQLStack extends Stack {
       },
       fineGrainedAccessControl: {
         masterUserName: "monitor-admin",
+        masterUserPassword: cdkSecAESPassword
       },
       logging: {
         auditLogEnabled: true,
@@ -253,7 +263,7 @@ export class GraphQLStack extends Stack {
     // Lambda handler to load data to AES, and delete DDB entries
     const aesLoaderLambda = new pythonLambda.PythonFunction(
       this,
-      "FirehoseTransformerFunction",
+      "DynamoDBToAESLoader",
       {
         entry: "./src/lambda/aes-loader",
         handler: "handler",
@@ -263,19 +273,19 @@ export class GraphQLStack extends Stack {
         layers: [pythonGQLLayer],
         environment: {
           AES_HOST_URL: esDomain.domainEndpoint,
-        }
+        },
       }
     );
     this.aesLoaderLambda = aesLoaderLambda;
 
-    esDomain.grantWrite(aesLoaderLambda);
+    esDomain.grantIndexWrite("ppe_monitoring", aesLoaderLambda);
 
     aesLoaderLambda.addEventSource(new events.KinesisEventSource(replicationStream, {
       startingPosition: lambda.StartingPosition.LATEST,
       batchSize: 100,
       enabled: true,
       bisectBatchOnError: true,
-      maxBatchingWindow: Duration.minutes(5)
+      maxBatchingWindow: Duration.minutes(5),
     }));
 
     const cfnDDBServRole = new iam.CfnServiceLinkedRole(

@@ -1,6 +1,7 @@
 import logging
 import base64
 import os
+# import datetime
 import json
 import boto3
 from requests_aws4auth import AWS4Auth
@@ -33,7 +34,8 @@ def handler(event, context):
         if db_event["eventName"] == "INSERT":
             newItem = db_event["dynamodb"]
             # print(newItem)
-            timestamp = newItem["Keys"]["ts"]["S"]
+            timestamp = float(newItem["Keys"]["ts"]["S"])
+            # event_time = datetime.datetime.utcfromtimestamp(timestamp).strftime("%Y/&")
             camera_id = newItem["Keys"]["cameraId"]["S"]
             ppe_result = newItem["NewImage"]["ppeResult"]["M"]
             # print(ppe_result)
@@ -51,7 +53,7 @@ def handler(event, context):
                         append_person(persons, bad_ppl["M"])
             frame_document = {
                 "camera_id": camera_id,
-                "timestamp": timestamp,
+                "time": timestamp,
                 "ppl_count": ppl_count,
                 "violation_count": count_person_without_ppe,
                 "persons": persons
@@ -64,7 +66,8 @@ def handler(event, context):
             }
             actions.append(action)
     try:
-        helpers.bulk(es, actions)
+        aes_res = helpers.bulk(es, actions)
+        print(aes_res)
     except AuthorizationException:
         print("Error loading data to AES: Unauthorized")
         # output_record = {

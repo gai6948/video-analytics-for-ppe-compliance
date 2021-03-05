@@ -14,6 +14,7 @@ TARGET_IMAGE_WIDTH = int(os.environ["TARGET_IMAGE_WIDTH"])
 TARGET_IMAGE_HEIGHT = int(os.environ["TARGET_IMAGE_HEIGHT"])
 MIN_CONFIDENCE = int(os.environ["MIN_DETECTION_CONFIDENCE"])
 SNS_TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
+DETECT_HELMET = os.environ["DETECT_HELMET"]
 
 rek_client = None
 s3_client = None
@@ -47,7 +48,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):
                 frame_bytes, frame_width, frame_height)
             ppe_result = detector.submit_job(
                 img_str, MIN_CONFIDENCE, rek_client)
-            filtered_resp = filter.filter_result(ppe_result, MIN_CONFIDENCE)
+            filtered_resp = filter.filter_result(ppe_result, MIN_CONFIDENCE, DETECT_HELMET)
             ppl_without_PPE = filtered_resp["Summary"]["SumPeopleWithoutRequiredEquipment"]
             if ppl_without_PPE >= 1:
                 for person in filtered_resp["PersonsWithoutRequiredEquipment"]:
