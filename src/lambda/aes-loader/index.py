@@ -1,11 +1,13 @@
+import logging
 import base64
 import os
 import json
 import boto3
 from requests_aws4auth import AWS4Auth
-from elasticsearch import Elasticsearch, RequestsHttpConnection
+from elasticsearch import Elasticsearch, RequestsHttpConnection, TransportError, AuthorizationException
 from elasticsearch import helpers
 
+logger = logging.getLogger('default')
 host = os.environ["AES_HOST_URL"]
 region = os.environ["AWS_REGION"]
 credentials = boto3.Session().get_credentials()
@@ -61,10 +63,10 @@ def handler(event, context):
                 "_source": frame_document
             }
             actions.append(action)
-        try:
-            helpers.bulk(es, actions)
-        except Exception:
-            print("Error loading data to AES" + Exception.message)
+    try:
+        helpers.bulk(es, actions)
+    except AuthorizationException:
+        print("Error loading data to AES: Unauthorized")
         # output_record = {
         #     'recordId': record['recordId'],
         #     'result': 'Ok',
