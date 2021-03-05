@@ -48,6 +48,7 @@ export class VideoAnalyticsDeploymentStage extends Stage {
       fargateAutoScalerFunc: frameParserStack.fargateAutoScalerFunction,
       appsyncAPI: graphQLLayerStack.appsyncAPI,
       frameParserLogGroup: frameParserStack.kvsFrameParserLogGroup,
+      aesLoaderLambda: graphQLLayerStack.aesLoaderLambda,
     });
 
     cwDashboardStack.addDependency(frameProcessorStack);

@@ -8,7 +8,7 @@ from elasticsearch import helpers
 
 host = os.environ["AES_HOST_URL"]
 region = os.environ["AWS_REGION"]
-credentials = boto3.Session.get_credentials()
+credentials = boto3.Session().get_credentials()
 awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
                    region, 'es', session_token=credentials.token)
 

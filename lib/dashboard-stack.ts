@@ -13,6 +13,7 @@ export interface MonitoringDashboardProps extends StackProps {
   fargateAutoScalerFunc: lambda.Function;
   appsyncAPI: appsync.GraphqlApi;
   frameParserLogGroup: logs.LogGroup;
+  aesLoaderLambda: lambda.Function;
 }
 
 export class MonitoringDashboard extends Stack {
@@ -107,27 +108,6 @@ export class MonitoringDashboard extends Stack {
       period: Duration.minutes(1),
     });
 
-    // const newFrameStreamIteratorAge = new cw.Metric({
-    //   metricName: "GetRecords.IteratorAge",
-    //   namespace: "AWS/Kinesis",
-    //   dimensions: {
-    //     StreamName: props.newFrameStream.streamName
-    //   },
-    //   statistic: 'max',
-    //   period: Duration.minutes(1),      
-    // });
-
-    // const newFrameStreamSubscriptionLatency = new cw.Metric({
-    //   metricName: "SubscribeToShardEvent.MillisBehindLatest",
-    //   namespace: "AWS/Kinesis",
-    //   dimensions: {
-    //     StreamName: props.newFrameStream.streamName,
-    //     ConsumerName: props.newFrameStreamConsumer.attrConsumerName
-    //   },
-    //   statistic: 'max',
-    //   period: Duration.minutes(1),      
-    // });
-
     const fargateAutoScalerError = new cw.Metric({
       metricName: "Errors",
       namespace: "AWS/Lambda",
@@ -162,6 +142,26 @@ export class MonitoringDashboard extends Stack {
       },
       statistic: 'max',
       period: Duration.minutes(1),      
+    });
+
+    const aesLoaderError = new cw.Metric({
+      metricName: "Errors",
+      namespace: "AWS/Lambda",
+      dimensions: {
+        FunctionName: props.aesLoaderLambda.functionName,
+      },
+      statistic: 'max',
+      period: Duration.minutes(1),
+    });
+
+    const aesLoaderInvocation = new cw.Metric({
+      metricName: "Invocations",
+      namespace: "AWS/Lambda",
+      dimensions: {
+        FunctionName: props.aesLoaderLambda.functionName,
+      },
+      statistic: 'max',
+      period: Duration.minutes(1),
     });
     
 
@@ -206,14 +206,6 @@ export class MonitoringDashboard extends Stack {
           label: "Error",
         },
       }),
-      // new cw.GraphWidget({
-      //   title: "Raw-Frame-Stream-Latency",
-      //   left: [newFrameStreamIteratorAge, newFrameStreamSubscriptionLatency],
-      //   liveData: true,
-      //   leftYAxis: {
-      //     label: "Miliseconds",
-      //   },
-      // }),
       new cw.GraphWidget({
         title: "Face-Detector-Function-Errors",
         left: [faceDetectorError],
@@ -224,6 +216,20 @@ export class MonitoringDashboard extends Stack {
         },
         rightYAxis: {
           label: "Invocations",
+        },
+      }),
+      new cw.GraphWidget({
+        title: "AES-Loader-Function-Errors",
+        left: [aesLoaderError],
+        right: [aesLoaderInvocation],
+        liveData: true,
+        leftYAxis: {
+          label: "Errors",
+          max: 5
+        },
+        rightYAxis: {
+          label: "Invocations",
+          max: 5
         },
       }),      
     );
@@ -278,12 +284,5 @@ export class MonitoringDashboard extends Stack {
       }),
     );
 
-    // const frameParserErrAlarm = new cw.Alarm(this, "FrameParserErrorAlarm", {
-    //   evaluationPeriods: 1,
-    //   metric: frameParserErrorCount,
-    //   threshold: 5,
-    // });
-
-    // frameParserErrAlarm.addAlarmAction();
   }
 }

@@ -26,6 +26,7 @@ export class GraphQLStack extends Stack {
   public esDomain: es.Domain;
   public cameraFrameTable: dynamodb.Table;
   public pythonGQLLayer: pythonLambda.PythonLayerVersion;
+  public aesLoaderLambda: pythonLambda.PythonFunction;
 
   constructor(scope: Construct, id: string, props?: GraphQLStackProps) {
     super(scope, id, props);
@@ -265,6 +266,9 @@ export class GraphQLStack extends Stack {
         }
       }
     );
+    this.aesLoaderLambda = aesLoaderLambda;
+
+    esDomain.grantWrite(aesLoaderLambda);
 
     aesLoaderLambda.addEventSource(new events.KinesisEventSource(replicationStream, {
       startingPosition: lambda.StartingPosition.LATEST,
