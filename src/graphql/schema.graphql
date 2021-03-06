@@ -30,6 +30,8 @@ type Mutation {
 type Subscription {
   onNewFrame(cameraId: String!): Frame
     @aws_subscribe(mutations: ["injestFrame"])
+  onNewAlarm(cameraId: String!): Alarm
+    @aws_subscribe(mutations: ["newAlarm"])
 }
 
 type Camera {
