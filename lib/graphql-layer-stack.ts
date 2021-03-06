@@ -238,12 +238,12 @@ export class GraphQLStack extends Stack {
       responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
     });
     
-    const aesPassword = new secretsmanager.Secret(this, "AESMasterPassword", {
-      generateSecretString: {
-        passwordLength: 10
-      }
-    });
-    const cdkSecAESPassword = SecretValue.secretsManager(aesPassword.secretArn);
+    // const aesPassword = new secretsmanager.Secret(this, "AESMasterPassword", {
+    //   generateSecretString: {
+    //     passwordLength: 10
+    //   }
+    // });
+    // const cdkSecAESPassword = SecretValue.secretsManager(aesPassword.secretArn);
 
     // Role for AES to configure Cognito
     const aesCognitoRole = new iam.Role(this, "CognitoAccessForAmazonES", {
@@ -271,6 +271,11 @@ export class GraphQLStack extends Stack {
       },
       domainEndpointOptions: {
         enforceHttps: true,
+      },
+      ebsOptions: {
+        ebsEnabled: true,
+        volumeSize: 30,
+        volumeType: "gp2"
       }
     });
 
