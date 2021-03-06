@@ -65,7 +65,7 @@ export class FrameProcessorStack extends Stack {
     rawFrameBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SnsDestination(newFrameTopic));
 
     // Create S3 bucket for storing the frames
-    const processedFrameBucket = new s3.Bucket(this, "FrameBucket", {
+    const processedFrameBucket = new s3.Bucket(this, "ProcessedFrameBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       lifecycleRules: [

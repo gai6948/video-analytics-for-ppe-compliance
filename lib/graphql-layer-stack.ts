@@ -25,7 +25,6 @@ export interface GraphQLStackProps extends StackProps {}
 export class GraphQLStack extends Stack {
   public appsyncAPI: appsync.GraphqlApi;
   public cognitoAuthRole: iam.Role;
-  public esDomain: es.Domain;
   public cameraFrameTable: dynamodb.Table;
   public pythonGQLLayer: pythonLambda.PythonLayerVersion;
   public aesLoaderLambda: pythonLambda.PythonFunction;
@@ -36,23 +35,24 @@ export class GraphQLStack extends Stack {
     // Cognito user pool for API access control
     const cognitoUserPool = new cognito.UserPool(
       this,
-      "VideoMonitoringUserPool",
+      "VideoAnalyticsUserPool",
       {
         autoVerify: {
           email: true,
           phone: false,
         },
         selfSignUpEnabled: true,
-      }
+        removalPolicy: RemovalPolicy.DESTROY
+      },
     );
 
     const portalAppClient = cognitoUserPool.addClient("portalAppClient");
 
     const cognitoIdentityPool = new cognito.CfnIdentityPool(
       this,
-      "VideoMonitoringIdentityPool",
+      "VideoAnalyticsIdentityPool",
       {
-        allowUnauthenticatedIdentities: false,
+        allowUnauthenticatedIdentities: true,
         cognitoIdentityProviders: [
           {
             clientId: portalAppClient.userPoolClientId,
@@ -75,6 +75,21 @@ export class GraphQLStack extends Stack {
         }
       ),
       description: "Role assumed by authenticated users",
+    });
+
+    const unAuthRole = new iam.Role(this, "CognitoUnAuthRole", {
+      assumedBy: new iam.WebIdentityPrincipal(
+        "cognito-identity.amazonaws.com",
+        {
+          StringEquals: {
+            "cognito-identity.amazonaws.com:aud": cognitoIdentityPool.ref,
+          },
+          "ForAnyValue:StringEquals": {
+            "cognito-identity.amazonaws.com:amr": "unauthenticated",
+          },
+        }
+      ),
+      description: "Role assumed by unauthenticated users",
     });
 
     authRole.node.addDependency(cognitoIdentityPool);
@@ -112,6 +127,7 @@ export class GraphQLStack extends Stack {
         },
         roles: {
           authenticated: authRole.roleArn,
+          unauthenticated: unAuthRole.roleArn,
         },
       }
     );
@@ -229,23 +245,58 @@ export class GraphQLStack extends Stack {
     });
     const cdkSecAESPassword = SecretValue.secretsManager(aesPassword.secretArn);
 
-    const esDomain = new es.Domain(this, "ESDomain", {
-      version: es.ElasticsearchVersion.V7_1,
-      enforceHttps: true,
-      nodeToNodeEncryption: true,
-      encryptionAtRest: {
-        enabled: true,
-      },
-      fineGrainedAccessControl: {
-        masterUserName: "monitor-admin",
-        masterUserPassword: cdkSecAESPassword
-      },
-      logging: {
-        auditLogEnabled: true,
-      },
+    // Role for AES to configure Cognito
+    const aesCognitoRole = new iam.Role(this, "CognitoAccessForAmazonES", {
+      assumedBy: new iam.ServicePrincipal("es.amazonaws.com")
     });
 
-    this.esDomain = esDomain;
+    aesCognitoRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonESCognitoAccess"));
+
+    const cfnEsDomain = new es.CfnDomain(this, "AESDomain", {
+      advancedSecurityOptions: {
+        enabled: false,
+      },
+      cognitoOptions: {
+        enabled: true,
+        userPoolId: cognitoUserPool.userPoolId,
+        identityPoolId: cognitoIdentityPool.ref,
+        roleArn: aesCognitoRole.roleArn
+      },
+      elasticsearchVersion: "7.9",
+      nodeToNodeEncryptionOptions: {
+        enabled: true
+      },
+      encryptionAtRestOptions: {
+        enabled: true
+      },
+      domainEndpointOptions: {
+        enforceHttps: true,
+      }
+    });
+
+    authRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["es:Http*"],
+      resources: [cfnEsDomain.getAtt("Arn").toString()]
+    }));
+
+    // const esDomain = new es.Domain(this, "ESDomain", {
+    //   version: es.ElasticsearchVersion.V7_1,
+    //   enforceHttps: true,
+    //   nodeToNodeEncryption: true,
+    //   encryptionAtRest: {
+    //     enabled: true,
+    //   },
+    //   fineGrainedAccessControl: {
+    //     masterUserName: "monitor-admin",
+    //     masterUserPassword: cdkSecAESPassword
+    //   },
+    //   logging: {
+    //     auditLogEnabled: true,
+    //   },
+    // });
+
+    // this.esDomain = esDomain;
 
     // Create a Kinesis Data Stream for replicate frame data written to DynamoDB
     const replicationStream = new kinesis.Stream(this, "replicationStream", {
@@ -272,13 +323,22 @@ export class GraphQLStack extends Stack {
         timeout: Duration.seconds(10),
         layers: [pythonGQLLayer],
         environment: {
-          AES_HOST_URL: esDomain.domainEndpoint,
+          AES_HOST_URL: cfnEsDomain.getAtt("DomainEndpoint").toString(),
         },
       }
     );
     this.aesLoaderLambda = aesLoaderLambda;
 
-    esDomain.grantIndexWrite("ppe_monitoring", aesLoaderLambda);
+    aesLoaderLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "es:ESHttpPost",
+        "es:ESHttpPut",
+        "es:ESHttpDelete",
+      ],
+      resources: [cfnEsDomain.getAtt("Arn").toString()]
+    }));
+    // esDomain.grantIndexWrite("ppe_monitoring", aesLoaderLambda);
 
     aesLoaderLambda.addEventSource(new events.KinesisEventSource(replicationStream, {
       startingPosition: lambda.StartingPosition.LATEST,
@@ -372,16 +432,16 @@ export class GraphQLStack extends Stack {
     });
 
     new CfnOutput(this, "AESDomainEndpoint", {
-      value: esDomain.domainName,
+      value: cfnEsDomain.getAtt("DomainEndpoint").toString(),
       description: "Endpoint for the AES Domain",
     });
 
-    if (esDomain.masterUserPassword) {
-      new CfnOutput(this, "AESDomainDefaultPassword", {
-        value: esDomain.masterUserPassword.toString(),
-        description:
-          "Default password or the AES Domain, managed by Secrets Manager",
-      });
-    }
+    // if (esDomain.masterUserPassword) {
+    //   new CfnOutput(this, "AESDomainDefaultPassword", {
+    //     value: esDomain.masterUserPassword.toString(),
+    //     description:
+    //       "Default password or the AES Domain, managed by Secrets Manager",
+    //   });
+    // }
   }
 }
