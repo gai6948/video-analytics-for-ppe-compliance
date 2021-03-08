@@ -42,9 +42,14 @@ export class GraphQLStack extends Stack {
           phone: false,
         },
         selfSignUpEnabled: true,
-        removalPolicy: RemovalPolicy.DESTROY
+        removalPolicy: RemovalPolicy.DESTROY,
       },
     );
+    const aesUserPoolDomain = cognitoUserPool.addDomain('aes-auth-userpool', {
+      cognitoDomain: {
+        domainPrefix: 'aesauth'
+      }
+    });
 
     const portalAppClient = cognitoUserPool.addClient("portalAppClient");
 
@@ -260,7 +265,7 @@ export class GraphQLStack extends Stack {
         enabled: true,
         userPoolId: cognitoUserPool.userPoolId,
         identityPoolId: cognitoIdentityPool.ref,
-        roleArn: aesCognitoRole.roleArn
+        roleArn: aesCognitoRole.roleArn,
       },
       elasticsearchVersion: "7.9",
       nodeToNodeEncryptionOptions: {
