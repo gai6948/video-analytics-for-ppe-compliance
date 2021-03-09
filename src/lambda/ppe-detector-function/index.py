@@ -27,8 +27,13 @@ tracer = Tracer(service='ppe-detector')
 def handler(event: Dict[str, Any], context: LambdaContext):
     for record in event["Records"]:
         rec = json.loads(record["body"])
-        print(rec)
-        for s3e in rec["Records"]:
+        try:
+            s3_records = rec["Records"]
+        except KeyError:
+            logger.warn("No records found in ")
+            logger.info(rec)
+            continue
+        for s3e in s3_records:
             src_s3bucket = s3e["s3"]["bucket"]["name"]
             src_s3key = s3e["s3"]["object"]["key"]
             frame_bytes, metadata = frame_downloader.download_frame(
