@@ -52,7 +52,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):
                 image, filename, TARGET_IMAGE_WIDTH, TARGET_IMAGE_HEIGHT)
             uploader.upload_s3(tmp_file, ppl_without_PPE, s3_client)
             mutation_req, variables = mutation_preparer.prepare_mutation(
-                camera_name, filename, timestamp, filtered_resp)
+                camera_name, filename, timestamp, filtered_resp, DETECT_HELMET)
             resp = mutation.make_mutation(mutation_req, variables)
             if ppl_without_PPE >= 1:
                 sns_status = notifier.notify_alarm(SNS_TOPIC_ARN, variables)

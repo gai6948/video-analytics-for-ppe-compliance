@@ -11,7 +11,7 @@ tracer = Tracer(service='ppe-detector')
 
 
 @tracer.capture_method(capture_response=False)
-def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_response: dict, detect_helmet: bool) -> Tuple[dict, dict]:
+def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_response: dict, detect_helmet: str) -> Tuple[dict, dict]:
     """
     Transform data into GraphQL Schema compliant format
 
@@ -33,7 +33,7 @@ def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_r
                 "top": person["BoundingBox"]["Top"]
             }
         }
-        if detect_helmet == True:
+        if detect_helmet == "true":
             ppl_with_equipment["missingHelmet"] == False
         pplWithEquipment.append(ppl_with_equipment)
 
@@ -49,7 +49,7 @@ def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_r
                 "top": person["BoundingBox"]["Top"]
             }
         }
-        if detect_helmet == True:
+        if detect_helmet == "true":
             ppl_without_equipment["missingHelmet"] == True if person["MISSING_HELMET"] == True else False
         pplWithoutEquipment.append(ppl_without_equipment)
 
