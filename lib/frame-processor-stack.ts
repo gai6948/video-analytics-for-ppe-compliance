@@ -174,7 +174,8 @@ export class FrameProcessorStack extends Stack {
         GRAPHQL_API_ENDPOINT: props.targetGqlApi.graphqlUrl,
         FRAME_BUCKET_NAME: processedFrameBucket.bucketName,
         MIN_CONFIDENCE_THRESHOLD: '90',
-        FACE_COLLECTION_ID: 'test-collection-01'
+        FACE_COLLECTION_ID: 'test-collection-01',
+        DETECT_HELMET: "false",
       }
     });
 

@@ -17,6 +17,7 @@ FRAME_BUCKET_NAME = os.environ["FRAME_BUCKET_NAME"]
 GRAPHQL_API_ENDPOINT = os.environ["GRAPHQL_API_ENDPOINT"]
 FACE_COLLECTION_ID = os.environ["FACE_COLLECTION_ID"]
 MIN_CONFIDENCE_THRESHOLD = int(os.environ["MIN_CONFIDENCE_THRESHOLD"])
+DETECT_HELMET = os.environ["DETECT_HELMET"]
 
 SOURCE_IMAGE_WIDTH = 640
 SOURCE_IMAGE_HEIGHT = 480
@@ -53,7 +54,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):
             drawer.draw_bounding_box(resp_list, sub_frame_size_list, resized_src_frame, drawn_frame_path)
             output_frame_filepath = converter.convert_frame(drawn_frame_path, '.webp')
             frame_uploader.upload_frame(FRAME_BUCKET_NAME, old_frame_key, output_frame_filepath, s3_client)
-            mutation, variables = mutation_preparer.prepare_mutation(msg, resp_list, True)
+            mutation, variables = mutation_preparer.prepare_mutation(msg, resp_list, True, DETECT_HELMET)
             mutation_executor.make_mutation(mutation, variables, GRAPHQL_API_ENDPOINT)
         else:
             logger.info("No PPE violation in alert, exiting...")

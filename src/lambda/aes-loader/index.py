@@ -82,11 +82,11 @@ def handler(event, context):
 
 def append_person(persons, ppl):
     missing_mask = ppl["missingMask"]["BOOL"]
-    missing_Helmet = ppl["missingHelmet"]["BOOL"]
+    # missing_Helmet = ppl["missingHelmet"]["BOOL"]
     ppl_id = int(ppl["id"]["N"])
     persons.append({
         "ppl_id": ppl_id,
-        "missing_helmet": missing_Helmet,
+        # "missing_helmet": missing_Helmet,
         "missing_mask": missing_mask
     })
     return persons

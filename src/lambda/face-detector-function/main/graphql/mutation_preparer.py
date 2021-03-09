@@ -9,7 +9,7 @@ logger = Logger(service='face-detector', child=True)
 tracer = Tracer(service='face-detector')
 
 @tracer.capture_method(capture_response=False)
-def prepare_mutation(message: dict, face_res: list, persons_detected: bool) -> Tuple[dict, dict]:
+def prepare_mutation(message: dict, face_res: list, persons_detected: bool, detect_helmet: str) -> Tuple[dict, dict]:
     start_time = timeit.default_timer()
 
     mutation = """
@@ -50,9 +50,10 @@ def prepare_mutation(message: dict, face_res: list, persons_detected: bool) -> T
                     "top": detected_face["SearchedFaceBoundingBox"]["Top"],
                 },
                 "missingMask": message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingMask"],
-                "missingHelmet": message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingHelmet"],
                 "faceId": detected_face["FaceMatches"][0]["Face"]["FaceId"]
             }
+            if detect_helmet == 'true':
+                person["missingHelmet"] = message["ppeResult"]["personsWithoutRequiredEquipment"][person_count]["missingHelmet"]
             persons.append(person)
             person_count += 1
     else:
