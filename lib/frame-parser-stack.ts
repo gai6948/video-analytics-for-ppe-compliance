@@ -71,6 +71,7 @@ export class FrameParserStack extends cdk.Stack {
         type: ddb.AttributeType.STRING
       },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
     const parserAutoScaler = new lambda.Function(this, "KvsParserAutoScaler", {

@@ -6,6 +6,7 @@ schema {
 
 type Query {
   listCamera: [Camera!]
+  listAlarm(count: Int, nextToken: String): PaginatedAlarms!
 }
 
 type Mutation {
@@ -55,6 +56,11 @@ type Alarm {
   s3url: String
   status: String
   persons: [Person]
+}
+
+type PaginatedAlarms {
+  alarms: [Alarm]
+  nextToken: String
 }
 
 type PPEResult {

@@ -27,14 +27,6 @@ tracer = Tracer(service='ppe-detector')
 def handler(event: Dict[str, Any], context: LambdaContext):
     for record in event["Records"]:
         rec = json.loads(record["body"])
-        # try:
-        #     s3_msg = json.loads(rec["Message"])
-        # except KeyError:
-        #     logger.warn("No message found: " + json.dumps(rec))
-        #     return {
-        #         "statusCode": 200,
-        #         "body": {"processed": "true"}
-        #     }
         for s3e in rec["Records"]:
             src_s3bucket = s3e["s3"]["bucket"]["name"]
             src_s3key = s3e["s3"]["object"]["key"]

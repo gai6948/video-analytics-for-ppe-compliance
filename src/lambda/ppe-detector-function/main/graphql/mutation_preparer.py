@@ -11,7 +11,7 @@ tracer = Tracer(service='ppe-detector')
 
 
 @tracer.capture_method(capture_response=False)
-def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_response: dict) -> Tuple[dict, dict]:
+def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_response: dict, detect_helmet: bool) -> Tuple[dict, dict]:
     """
     Transform data into GraphQL Schema compliant format
 
@@ -22,7 +22,7 @@ def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_r
 
     pplWithEquipment = []
     for person in filtered_response["PersonsWithRequiredEquipment"]:
-        pplWithEquipment.append({
+        ppl_with_equipment = {
             "id": person["Id"],
             "missingMask": False,
             "missingHelmet": False,
@@ -32,21 +32,26 @@ def prepare_mutation(camera_name: str, filename: str, timestamp: str, filtered_r
                 "left": person["BoundingBox"]["Left"],
                 "top": person["BoundingBox"]["Top"]
             }
-        })
+        }
+        if detect_helmet == True:
+            ppl_with_equipment["missingHelmet"] == False
+        pplWithEquipment.append(ppl_with_equipment)
 
     pplWithoutEquipment = []
     for person in filtered_response["PersonsWithoutRequiredEquipment"]:
-        pplWithoutEquipment.append({
+        ppl_without_equipment = {
             "id": person["Id"],
             "missingMask": True if person["MISSING_MASK"] == True else False,
-            "missingHelmet": True if person["MISSING_HELMET"] == True else False,
             "boundingBox": {
                 "width": person["BoundingBox"]["Width"],
                 "height": person["BoundingBox"]["Height"],
                 "left": person["BoundingBox"]["Left"],
                 "top": person["BoundingBox"]["Top"]
             }
-        })
+        }
+        if detect_helmet == True:
+            ppl_without_equipment["missingHelmet"] == True if person["MISSING_HELMET"] == True else False
+        pplWithoutEquipment.append(ppl_without_equipment)
 
     mutation = """
         mutation InjestFrame(

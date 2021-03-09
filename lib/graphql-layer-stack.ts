@@ -3,7 +3,6 @@ import {
   Construct,
   Duration,
   RemovalPolicy,
-  SecretValue,
   Stack,
   StackProps,
 } from "@aws-cdk/core";
@@ -17,7 +16,6 @@ import * as cr from "@aws-cdk/custom-resources";
 import * as pythonLambda from "@aws-cdk/aws-lambda-python";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as events from "@aws-cdk/aws-lambda-event-sources";
-import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
 
 export interface GraphQLStackProps extends StackProps {}
 
@@ -243,12 +241,12 @@ export class GraphQLStack extends Stack {
       responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem()
     });
     
-    // const aesPassword = new secretsmanager.Secret(this, "AESMasterPassword", {
-    //   generateSecretString: {
-    //     passwordLength: 10
-    //   }
-    // });
-    // const cdkSecAESPassword = SecretValue.secretsManager(aesPassword.secretArn);
+    ppeAlarmDataSource.createResolver({
+      typeName: "Query",
+      fieldName: "listAlarm",
+      requestMappingTemplate: appsync.MappingTemplate.fromFile("./src/graphql/vtl/listAlarmRequest.vtl"),
+      responseMappingTemplate: appsync.MappingTemplate.fromFile("./src/graphql/vtl/listAlarmResponse.vtl")
+    });
 
     // Role for AES to configure Cognito
     const aesCognitoRole = new iam.Role(this, "CognitoAccessForAmazonES", {
@@ -281,8 +279,9 @@ export class GraphQLStack extends Stack {
         ebsEnabled: true,
         volumeSize: 30,
         volumeType: "gp2"
-      }
+      },
     });
+    cfnEsDomain.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     authRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
