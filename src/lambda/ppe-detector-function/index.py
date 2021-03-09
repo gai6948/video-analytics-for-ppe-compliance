@@ -28,7 +28,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):
     for record in event["Records"]:
         rec = json.loads(record["body"])
         print(rec)
-        for s3e in rec["records"]:
+        for s3e in rec["Records"]:
             src_s3bucket = s3e["s3"]["bucket"]["name"]
             src_s3key = s3e["s3"]["object"]["key"]
             frame_bytes, metadata = frame_downloader.download_frame(
