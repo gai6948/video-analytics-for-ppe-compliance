@@ -255,6 +255,11 @@ export class GraphQLStack extends Stack {
 
     aesCognitoRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonESCognitoAccess"));
 
+    const aesLoaderRole = new iam.Role(this, "AESLoaderRole", {
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+      description: "Role assumed by AES loader Lambda to index documents",
+    });
+
     const aesResourcePolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
@@ -262,7 +267,7 @@ export class GraphQLStack extends Stack {
           principals: [this.cognitoAuthRole],
           actions: ["es:Http*"],
           resources: ["*"]
-        })
+        }),
       ]
     }).toJSON();
 
@@ -357,7 +362,7 @@ export class GraphQLStack extends Stack {
         "es:ESHttpPut",
         "es:ESHttpDelete",
       ],
-      resources: [cfnEsDomain.getAtt("Arn").toString()]
+      resources: [cfnEsDomain.getAtt("Arn").toString().concat("/*")]
     }));
     // esDomain.grantIndexWrite("ppe_monitoring", aesLoaderLambda);
 
