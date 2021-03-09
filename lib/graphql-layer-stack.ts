@@ -255,6 +255,17 @@ export class GraphQLStack extends Stack {
 
     aesCognitoRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonESCognitoAccess"));
 
+    const aesResourcePolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          principals: [this.cognitoAuthRole],
+          actions: ["es:Http*"],
+          resources: ["*"]
+        })
+      ]
+    }).toJSON();
+
     const cfnEsDomain = new es.CfnDomain(this, "AESDomain", {
       advancedSecurityOptions: {
         enabled: false,
@@ -280,6 +291,7 @@ export class GraphQLStack extends Stack {
         volumeSize: 30,
         volumeType: "gp2"
       },
+      accessPolicies: aesResourcePolicy,
     });
     cfnEsDomain.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
@@ -445,12 +457,5 @@ export class GraphQLStack extends Stack {
       description: "Endpoint for the AES Domain",
     });
 
-    // if (esDomain.masterUserPassword) {
-    //   new CfnOutput(this, "AESDomainDefaultPassword", {
-    //     value: esDomain.masterUserPassword.toString(),
-    //     description:
-    //       "Default password or the AES Domain, managed by Secrets Manager",
-    //   });
-    // }
   }
 }
