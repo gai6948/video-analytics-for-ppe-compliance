@@ -20,10 +20,13 @@ def write_record(record: dict, stream_name: str, firehose_client: None):
     try:
         firehose_resp = firehose_client.put_record(
             DeliveryStreamName=stream_name,
-            Record=payload
+            Record={
+                'Data': payload
+            }
         )
 
         recordId = firehose_resp["RecordId"]
         logger.info(f'Record with id {recordId} put to Firehose after {timeit.default_timer() - start_time}')
     except Exception as e:
-        logger.error('Failed to put record to Firehose: ' + str(e))
+        logger.error('Failed to put record to Firehose')
+        logger.error(e)
