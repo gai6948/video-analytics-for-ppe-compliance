@@ -28,7 +28,7 @@ color_mapping = {
 }
 
 @tracer.capture_method(capture_response=False)
-def draw_bounding_box(face_res: list, size_list: list, frame: np.ndarray, filepath: str):
+def draw_bounding_box(face_res: list, size_list: list, frame: np.ndarray, filepath: str) -> list:
     """
     Draw bounding box on the frame based on the detected faces' bounding box coordinates
     :param: `face_res` List containing the Rekognition face search
@@ -40,6 +40,7 @@ def draw_bounding_box(face_res: list, size_list: list, frame: np.ndarray, filepa
     start_time = timeit.default_timer()
 
     ppl_count = 0
+    ppl_list = []
 
     for ppl in face_res:
         height, width = frame.shape[:2]
@@ -51,6 +52,7 @@ def draw_bounding_box(face_res: list, size_list: list, frame: np.ndarray, filepa
         # print(cropped_frame_width)
         label_left = face_res[ppl_count]["SearchedFaceBoundingBox"]["Left"] / cropped_frame_width * width
         label_top = face_res[ppl_count]["SearchedFaceBoundingBox"]["Top"] / cropped_frame_width * height
+        faceId = face_res[ppl_count]["FaceMatches"][0]["Face"]["FaceId"]
         if label_left > 0.0 and label_left < 1.0: # Ignore drawing if the bounding box is outside of frame
             if label_top > 0.0 and label_top < 1.0:
                 label_height = face_res[ppl_count]["SearchedFaceBoundingBox"]["Height"] * cropped_frame_height / height
@@ -60,15 +62,16 @@ def draw_bounding_box(face_res: list, size_list: list, frame: np.ndarray, filepa
                 x2 = int(x1 + label_width * width)
                 y2 = int(y1 + label_height * height)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color_mapping[ppl_count], 5)
-                cv2.putText(frame, f'Face-ID: {face_res[ppl_count]["FaceMatches"][0]["Face"]["FaceId"]}', (int(x1 * 0.9) , y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.3, color_mapping[14-ppl_count], 1)
+                cv2.putText(frame, f'Face-ID: {faceId}', (int(x1 * 0.9) , y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.3, color_mapping[14-ppl_count], 1)
             else:
                 logger.info("Person out of bound, skip drawing")
         else:
             logger.info("Person out of bound, skip drawing")
-
+        ppl_list.append(faceId)
         ppl_count += 1
 
     cv2.imwrite(filepath, frame)
 
     logger.info(
         f'Image drawing completed after: {timeit.default_timer() - start_time}')
+    return ppl_list

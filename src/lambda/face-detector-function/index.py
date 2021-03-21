@@ -51,7 +51,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):
                 else:   
                     resp_list.append(face_detection_res)
             drawn_frame_path = '/tmp/' + old_frame_key.split('.')[0] + '.png'
-            drawer.draw_bounding_box(resp_list, sub_frame_size_list, resized_src_frame, drawn_frame_path)
+            violation_list = drawer.draw_bounding_box(resp_list, sub_frame_size_list, resized_src_frame, drawn_frame_path)
             output_frame_filepath = converter.convert_frame(drawn_frame_path, '.webp')
             frame_uploader.upload_frame(FRAME_BUCKET_NAME, old_frame_key, output_frame_filepath, s3_client)
             mutation, variables = mutation_preparer.prepare_mutation(msg, resp_list, True, DETECT_HELMET)

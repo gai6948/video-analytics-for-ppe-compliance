@@ -8,7 +8,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from main.image_ops import decoder, drawer, resizer
 from main.utils import uploader, filename_generator, frame_downloader
 from main.ppedetection import detector, filter, notifier
-# from main.graphql import mutation, mutation_preparer
 from main.firehose import record_preparer, record_writer
 
 TARGET_IMAGE_WIDTH = int(os.environ["TARGET_IMAGE_WIDTH"])
