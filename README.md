@@ -24,7 +24,7 @@ The injestion of video is done via Kinesis Video Streams (KVS), it enables video
 
 ### Raw Video Processing
 
-The architecture for raw video processing is inspired from the Proserv team's brilliant [blog post](https://aws.amazon.com/blogs/machine-learning/accelerating-the-deployment-of-ppe-detection-solution-to-comply-with-safety-guidelines/), where they introduced a scalable pattern for processing KVS video streams using a fleet of auto-scaling Fargate tasks, scaled using KVS producer and consumer metrics, when there is no video in, consuming task can be shut down, and when video is coming in, a task is spawned to consume on the video stream. The only difference betweeen the implementation is that here the DynamoDB table only stores which Fargate task is consuming which video stream, and no checkpointing logic is implemented.
+The architecture for raw video processing is inspired from the Proserv team's brilliant [blog post](https://aws.amazon.com/blogs/machine-learning/accelerating-the-deployment-of-ppe-detection-solution-to-comply-with-safety-guidelines/), where they introduced a scalable pattern for processing KVS video streams using a fleet of auto-scaling Fargate tasks (Using the [KVS Parser Library](https://github.com/aws/amazon-kinesis-video-streams-parser-library) in Java), scaled using KVS producer and consumer metrics, when there is no video in, consuming task can be shut down, and when video is coming in, a task is spawned to consume on the video stream. The only difference betweeen the implementation is that here the DynamoDB table only stores which Fargate task is consuming which video stream, and no checkpointing logic is implemented.
 
 <img src="doc/blog-vidin.jpg" />
 
@@ -32,6 +32,6 @@ The architecture for raw video processing is inspired from the Proserv team's br
 
 The inference pipeline consists of a few steps, when video frame is uploaded in the raw frame bucket, an S3 event is triggered, going through SNS to SQS, picked up by a Lambda worker to do PPE Analysis using Rekognition's PPE API. The reason for this design is due to Rekognition PPE's API hard limit of 5 concurrent invocation per account/region, so the concurrency of the Lambda must be controlled at a maximum of 5, regardless of how many video streams. Prior and after calling the Rekognition PPE API, there are some image resizing and format conversion done by the Lambda, processed images are stored in a destination bucket in webp format, which greatly reduces image size (3xxKB -> 2xKB). For each processed frames, the result are stored in a DynamoDB table with a TTL of 7 days, used for hot processing.
 
-For SageMaker-based inference solutions, the architecture can be simplified 
+For SageMaker-based inference solutions, the architecture can be simplified by having the KVS Consumer Fargate task directly invoking the Sagemaker endpoint, saving a lot of load-levelling resources.
 
 <img src="doc/inf-pipeline.png" />

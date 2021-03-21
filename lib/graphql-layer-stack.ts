@@ -336,6 +336,7 @@ export class GraphQLStack extends Stack {
       }
     );
     this.firehoseStream = deliveryStream;
+    deliveryStream.node.addDependency(firehoseRole);
 
     // Python lambda layer for GQL/REST libraries and middleware
     const pythonGQLLayer = new pythonLambda.PythonLayerVersion(this, "PythonGQLLayer", {
