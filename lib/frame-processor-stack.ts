@@ -131,7 +131,7 @@ export class FrameProcessorStack extends Stack {
           TARGET_IMAGE_WIDTH: "480",
           TARGET_IMAGE_HEIGHT: "320",
           SNS_TOPIC_ARN: violationAlarmTopic.topicArn,
-          FIREHOSE_STREAM: props.firehoseStream.deliveryStreamName as string,
+          FIREHOSE_STREAM: props.firehoseStream.ref,
           DETECT_HELMET: detectHelmet ? "true" : "false"
         },
         maxEventAge: Duration.seconds(60),
