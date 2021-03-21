@@ -222,7 +222,7 @@ export class GraphQLStack extends Stack {
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           principals: [this.cognitoAuthRole],
-          actions: ["es:Http*"],
+          actions: ["es:ESHttp*"],
           resources: ["*"]
         }),
       ]

@@ -6,7 +6,7 @@ This solution demonstrates streaming videos from cameras of any kind to AWS for 
 
 ## Architecture
 
-<img src="doc/arch.png" />
+<img src="doc/arch1.png" />
 
 The solution is comprised of different parts, and can be broken down into the following sections:
 
@@ -30,8 +30,14 @@ The architecture for raw video processing is inspired from the Proserv team's br
 
 ### Inference Pipeline
 
-The inference pipeline consists of a few steps, when video frame is uploaded in the raw frame bucket, an S3 event is triggered, going through SNS to SQS, picked up by a Lambda worker to do PPE Analysis using Rekognition's PPE API. The reason for this design is due to Rekognition PPE's API hard limit of 5 concurrent invocation per account/region, so the concurrency of the Lambda must be controlled at a maximum of 5, regardless of how many video streams. Prior and after calling the Rekognition PPE API, there are some image resizing and format conversion done by the Lambda, processed images are stored in a destination bucket in webp format, which greatly reduces image size (3xxKB -> 2xKB). For each processed frames, the result are stored in a DynamoDB table with a TTL of 7 days, used for hot processing.
+The inference pipeline consists of a few steps, when video frame is uploaded in the raw frame bucket, an S3 event is triggered, going through SNS to SQS, picked up by a Lambda worker to do PPE Analysis using Rekognition's PPE API. The reason for this design is due to Rekognition PPE's API hard limit of 5 concurrent invocation per account/region, so the concurrency of the Lambda must be controlled at a maximum of 5, regardless of how many video streams. Prior and after calling the Rekognition PPE API, there are some image resizing and format conversion done by the Lambda, processed images are stored in a destination bucket in webp format, which greatly reduces image size (3xxKB -> 2xKB). For each processed frames, the result are persisted in an ElasticSearch domain for analytics (to be explained [later](#))
 
 For SageMaker-based inference solutions, the architecture can be simplified by having the KVS Consumer Fargate task directly invoking the Sagemaker endpoint, saving a lot of load-levelling resources.
 
 <img src="doc/inf-pipeline.png" />
+
+### Alerting and result presentation
+
+If Rekognition PPE detects violation case, an SNS notification is sent to a downstream Lambda. The Lambda function will perform a face search against stored faces, to identify the person without PPE. After the bounding boxes are drawn, an alert is sent to an AppSync API, after which to be stored in a DynamoDB table. From the monitoring portal (a custom Web UI), users can see a list of alerts with number of PPE violation in each of them, and also the image.
+
+<img >

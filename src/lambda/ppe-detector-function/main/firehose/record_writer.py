@@ -15,6 +15,9 @@ def write_record(record: dict, stream_name: str, firehose_client: None):
     if firehose_client == None:
         firehose_client = boto3.client('firehose')
 
+    # Change timestamp to long format for ElasticSearch to identify as date
+    record["ts"] = int(record["ts"])
+
     payload = json.dumps(record).encode('utf-8')
     
     try:
