@@ -25,6 +25,7 @@ export class VideoAnalyticsDeploymentStage extends Stage {
         targetGqlApi: graphQLLayerStack.appsyncAPI,
         cognitoAuthRole: graphQLLayerStack.cognitoAuthRole,
         pythonGQLLayer: graphQLLayerStack.pythonGQLLayer,
+        firehoseStream: graphQLLayerStack.firehoseStream,
         description:
           "A stack that contains Lambda consumers processing the frames, and S3 buckets storing the frames",
       }
@@ -48,7 +49,6 @@ export class VideoAnalyticsDeploymentStage extends Stage {
       fargateAutoScalerFunc: frameParserStack.fargateAutoScalerFunction,
       appsyncAPI: graphQLLayerStack.appsyncAPI,
       frameParserLogGroup: frameParserStack.kvsFrameParserLogGroup,
-      aesLoaderLambda: graphQLLayerStack.aesLoaderLambda,
     });
 
     cwDashboardStack.addDependency(frameProcessorStack);

@@ -10,14 +10,6 @@ type Query {
 }
 
 type Mutation {
-  injestFrame(
-    cameraId: String!
-    ts: String!
-    s3url: String
-    ppeResult: PPEResultInput
-    ppeViolationCount: Int
-    pplCount: Int
-  ): Frame
   addCamera(cameraId: String!): Camera
   newAlarm(
     cameraId: String!
@@ -29,25 +21,12 @@ type Mutation {
 }
 
 type Subscription {
-  onNewFrame(cameraId: String!): Frame
-    @aws_subscribe(mutations: ["injestFrame"])
   onNewAlarm(cameraId: String!): Alarm
     @aws_subscribe(mutations: ["newAlarm"])
 }
 
 type Camera {
   id: String!
-  latestFrame: Frame
-}
-
-type Frame {
-  cameraId: String!
-  ts: String!
-  s3url: String
-  ppeResult: PPEResult
-  persons: [Person]
-  ppeViolationCount: Int
-  pplCount: Int
 }
 
 type Alarm {

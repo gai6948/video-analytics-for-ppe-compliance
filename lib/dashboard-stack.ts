@@ -13,7 +13,6 @@ export interface MonitoringDashboardProps extends StackProps {
   fargateAutoScalerFunc: lambda.Function;
   appsyncAPI: appsync.GraphqlApi;
   frameParserLogGroup: logs.LogGroup;
-  aesLoaderLambda: lambda.Function;
 }
 
 export class MonitoringDashboard extends Stack {
@@ -142,28 +141,7 @@ export class MonitoringDashboard extends Stack {
       },
       statistic: 'max',
       period: Duration.minutes(1),      
-    });
-
-    const aesLoaderError = new cw.Metric({
-      metricName: "Errors",
-      namespace: "AWS/Lambda",
-      dimensions: {
-        FunctionName: props.aesLoaderLambda.functionName,
-      },
-      statistic: 'max',
-      period: Duration.minutes(1),
-    });
-
-    const aesLoaderInvocation = new cw.Metric({
-      metricName: "Invocations",
-      namespace: "AWS/Lambda",
-      dimensions: {
-        FunctionName: props.aesLoaderLambda.functionName,
-      },
-      statistic: 'max',
-      period: Duration.minutes(1),
-    });
-    
+    });    
 
     const frameParserErrorFilter = new logs.MetricFilter(this, "FrameParserErrorCount", {
       logGroup: props.frameParserLogGroup,
@@ -218,20 +196,6 @@ export class MonitoringDashboard extends Stack {
           label: "Invocations",
         },
       }),
-      new cw.GraphWidget({
-        title: "AES-Loader-Function-Errors",
-        left: [aesLoaderError],
-        right: [aesLoaderInvocation],
-        liveData: true,
-        leftYAxis: {
-          label: "Errors",
-          max: 5
-        },
-        rightYAxis: {
-          label: "Invocations",
-          max: 5
-        },
-      }),      
     );
 
     dashboard.addWidgets(
@@ -267,9 +231,6 @@ export class MonitoringDashboard extends Stack {
           label: "Error",
         },
       }),
-    );
-
-    dashboard.addWidgets(
       new cw.GraphWidget({
         title: "Fargate-AutoScaler-Function-Errors",
         left: [fargateAutoScalerError],
@@ -281,7 +242,7 @@ export class MonitoringDashboard extends Stack {
         rightYAxis: {
           label: "Invocations",
         },
-      }),
+      }),      
     );
 
   }

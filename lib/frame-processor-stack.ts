@@ -16,10 +16,12 @@ import * as sns from "@aws-cdk/aws-sns";
 import * as sub from "@aws-cdk/aws-sns-subscriptions";
 import * as sqs from "@aws-cdk/aws-sqs";
 import * as events from "@aws-cdk/aws-lambda-event-sources";
+import * as firehose from "@aws-cdk/aws-kinesisfirehose";
 
 export interface FrameProcessorStackProps extends StackProps {
   targetGqlApi: appsync.GraphqlApi;
   cognitoAuthRole: iam.Role;
+  firehoseStream: firehose.CfnDeliveryStream;
   pythonGQLLayer: pythonLambda.PythonLayerVersion;
 }
 
@@ -129,6 +131,7 @@ export class FrameProcessorStack extends Stack {
           TARGET_IMAGE_WIDTH: "480",
           TARGET_IMAGE_HEIGHT: "320",
           SNS_TOPIC_ARN: violationAlarmTopic.topicArn,
+          FIREHOSE_STREAM: props.firehoseStream.deliveryStreamName as string,
           DETECT_HELMET: detectHelmet ? "true" : "false"
         },
         maxEventAge: Duration.seconds(60),

@@ -8,16 +8,19 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from main.image_ops import decoder, drawer, resizer
 from main.utils import uploader, filename_generator, frame_downloader
 from main.ppedetection import detector, filter, notifier
-from main.graphql import mutation, mutation_preparer
+# from main.graphql import mutation, mutation_preparer
+from main.firehose import record_preparer, record_writer
 
 TARGET_IMAGE_WIDTH = int(os.environ["TARGET_IMAGE_WIDTH"])
 TARGET_IMAGE_HEIGHT = int(os.environ["TARGET_IMAGE_HEIGHT"])
 MIN_CONFIDENCE = int(os.environ["MIN_DETECTION_CONFIDENCE"])
 SNS_TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
 DETECT_HELMET = os.environ["DETECT_HELMET"]
+TAREGT_FIREHOSE_STREAM = os.environ["FIREHOSE_STREAM"]
 
 rek_client = None
 s3_client = None
+firehose_client = None
 
 logger = Logger(service='ppe-detector', level='INFO')
 tracer = Tracer(service='ppe-detector')
@@ -57,11 +60,13 @@ def handler(event: Dict[str, Any], context: LambdaContext):
             tmp_file = resizer.resize_image(
                 image, filename, TARGET_IMAGE_WIDTH, TARGET_IMAGE_HEIGHT)
             uploader.upload_s3(tmp_file, ppl_without_PPE, s3_client)
-            mutation_req, variables = mutation_preparer.prepare_mutation(
+
+            record = record_preparer.prepare_record(
                 camera_name, filename, timestamp, filtered_resp, DETECT_HELMET)
-            resp = mutation.make_mutation(mutation_req, variables)
+            record_writer.write_record(record, TAREGT_FIREHOSE_STREAM, firehose_client)
+
             if ppl_without_PPE >= 1:
-                sns_status = notifier.notify_alarm(SNS_TOPIC_ARN, variables)
+                sns_status = notifier.notify_alarm(SNS_TOPIC_ARN, record)
     return {
         "statusCode": 200,
         "body": {"processed": "true"}
