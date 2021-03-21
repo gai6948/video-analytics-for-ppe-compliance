@@ -28,6 +28,7 @@ tracer = Tracer(service='ppe-detector')
 
 @tracer.capture_lambda_handler
 def handler(event: Dict[str, Any], context: LambdaContext):
+    logger.info(event)
     for record in event["Records"]:
         rec = json.loads(record["body"])
         try:
