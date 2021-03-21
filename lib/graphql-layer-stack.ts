@@ -260,7 +260,7 @@ export class GraphQLStack extends Stack {
     authRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["es:Http*"],
-      resources: [cfnEsDomain.getAtt("Arn").toString()]
+      resources: [cfnEsDomain.getAtt("Arn").toString(), cfnEsDomain.getAtt("Arn").toString().concat('/*')]
     }));
 
     // Create an IAM role for Kinesis Firehose to read from Kinesis Stream and write to ElasticSearch
