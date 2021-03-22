@@ -40,7 +40,7 @@ For SageMaker-based inference solutions, the architecture can be simplified by h
 
 If Rekognition PPE detects violation case, an SNS notification is sent to a downstream Lambda. The Lambda function will perform a face search against stored faces, to identify the person without PPE. After the bounding boxes are drawn, an alert is sent to an AppSync API, after which to be stored in a DynamoDB table. From the monitoring portal (a custom Web UI), users can see a list of alerts with number of PPE violation in each of them, and also the image.
 
-<img >
+<img src="doc/portal-ui.png" />
 
 ### Analytics Dashboard
 
@@ -48,3 +48,6 @@ Kibana dashboard is used for visualizing the PPE violation data over a time-seri
 
 ## Deployment
 
+This solution was developed by AWS CDK, and deployment is done through CodePipeline.
+
+First initiate

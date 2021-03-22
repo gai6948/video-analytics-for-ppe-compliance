@@ -150,6 +150,12 @@ export class FrameProcessorStack extends Stack {
     props.targetGqlApi.grantMutation(ppeProcessorFunction);
     props.targetGqlApi.grantQuery(ppeProcessorFunction);
 
+    ppeProcessorFunction.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["firehose:PutRecord"],
+      resources: [props.firehoseStream.getAtt('Arn').toString()]
+    }));
+
     this.frameProcessorFunction = ppeProcessorFunction;
 
     ppeProcessorFunction.addEventSource(new events.SqsEventSource(newFrameQueue, {
