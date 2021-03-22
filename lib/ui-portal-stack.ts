@@ -49,6 +49,9 @@ export class UIPortalStack extends cdk.Stack {
         FILE_BUCKET: portalUIBucket.bucketName,
         VERSION: "0.1",
       },
+      bundling: {
+          nodeModules: ['unzipper']
+      }
     });
 
     setupLambda.addToRolePolicy(
