@@ -1,5 +1,5 @@
 node_modules
-*.js
+lib/*.js
 *.d.ts
 *.DS_Store
 cdk.out

@@ -4,6 +4,12 @@ For many enterprises, petabytes of data are generated from their CCTV everyday, 
 
 This solution demonstrates streaming videos from cameras of any kind to AWS for real-time analytics on PPE compliance, using Amazon Rekognition, and visualize such data in a dashboard and a monitoring portal. While this example mainly focus on PPE compliance, the general architecture can be applied for other use cases as well (i.e. intrusion detection, people tracking/counting, etc)
 
+<p align="center">
+  <a href="#architecture">Architecture</a> •
+  <a href="#deployment">Deployment</a> •
+  <a href="#customizing the solution">Customizing the solution</a> •
+</p>
+
 ## Architecture
 
 <img src="doc/arch1.png" />
@@ -84,4 +90,28 @@ git add .
 git commit -m "Initial Commit"
 git push -u codecommit master
 ```
+
+The deployment should take around 30 minutes, you can take a break first.
+
+### See deployment results
+
+Once the deployment is ready, you should see some stacks in your [CloudFormation console](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/)
+
+## Add face collection (Optional)
+
+If you want to display face-id on PPE violation, you can add a face collection in Amazon Rekognition, so that you can differentiate between different people, for details on how to add a face collection, visit the [documentation](https://docs.aws.amazon.com/rekognition/latest/dg/create-collection-procedure.html). Once the face collection is created, change line 186 of `lib/frame-processor-stack.ts` to modify the Lambda environment variable (FACE_COLLECTION_ID) to point to your face collection.
+
+Web UI for adding face collection using browser webcam is currently on the backlog.
+
+## Customizing the solution
+
+### Customizing the KVS Consumer
+
+In order to reduce deployment time (otherwise 1 more hour of maven build), the container image for KVS Consumer (Frame Parser) is pre-built, and on deployment time it pulls from my ECR public gallery, you can modify the CDK code in `lib/frame-parser-stack.ts` to use the folder in `src/ecs/kvs-frame-parser`
+
+## Backlog
+
+* Web UI for creating Rekognition face collection using browser webcam
+* Alarm deduplication in case of same person appearing in consecutive alarms
+* Custom ML model instead of Rekognition PPE API
 
