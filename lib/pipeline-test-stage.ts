@@ -54,7 +54,7 @@ export class VideoAnalyticsDeploymentStage extends Stage {
 
     cwDashboardStack.addDependency(frameProcessorStack);
 
-    const uiPortalStack = new UIPortalStack(this, "WebPortalStack", {
+    const uiPortalStack = new UIPortalStack(this, "WebUIPortalStack", {
       appClient: graphQLLayerStack.appClient,
       appsyncAPI: graphQLLayerStack.appsyncAPI,
       frameBucket: frameProcessorStack.processedframeBucket,
