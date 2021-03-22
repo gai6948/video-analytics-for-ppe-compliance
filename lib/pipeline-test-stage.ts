@@ -4,6 +4,7 @@ import { FrameParserStack } from "./frame-parser-stack";
 import { FrameProcessorStack } from "./frame-processor-stack";
 import { GraphQLStack } from "./graphql-layer-stack";
 import { MonitoringDashboard } from "./dashboard-stack";
+import { UIPortalStack } from "./ui-portal-stack";
 
 export class VideoAnalyticsDeploymentStage extends Stage {
   constructor(scope: Construct, id: string, props?: StageProps) {
@@ -49,6 +50,16 @@ export class VideoAnalyticsDeploymentStage extends Stage {
       fargateAutoScalerFunc: frameParserStack.fargateAutoScalerFunction,
       appsyncAPI: graphQLLayerStack.appsyncAPI,
       frameParserLogGroup: frameParserStack.kvsFrameParserLogGroup,
+    });
+
+    cwDashboardStack.addDependency(frameProcessorStack);
+
+    const uiPortalStack = new UIPortalStack(this, "UIPortalStack", {
+      appClient: graphQLLayerStack.appClient,
+      appsyncAPI: graphQLLayerStack.appsyncAPI,
+      frameBucket: frameProcessorStack.processedframeBucket,
+      identityPool: graphQLLayerStack.identityPool,
+      userPool: graphQLLayerStack.userPool,
     });
 
     cwDashboardStack.addDependency(frameProcessorStack);

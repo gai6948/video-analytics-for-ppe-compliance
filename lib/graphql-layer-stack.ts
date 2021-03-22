@@ -8,7 +8,6 @@ import {
 } from "@aws-cdk/core";
 import * as appsync from "@aws-cdk/aws-appsync";
 import * as cognito from "@aws-cdk/aws-cognito";
-import * as kinesis from "@aws-cdk/aws-kinesis";
 import * as firehose from "@aws-cdk/aws-kinesisfirehose";
 import * as iam from "@aws-cdk/aws-iam";
 import * as dynamodb from "@aws-cdk/aws-dynamodb";
@@ -16,12 +15,14 @@ import * as es from "@aws-cdk/aws-elasticsearch";
 import * as s3 from "@aws-cdk/aws-s3";
 import * as pythonLambda from "@aws-cdk/aws-lambda-python";
 import * as lambda from "@aws-cdk/aws-lambda";
-import * as events from "@aws-cdk/aws-lambda-event-sources";
 
 export interface GraphQLStackProps extends StackProps {}
 
 // This stack holds the AppSync resources (AppSync API, resolvers, Cognito user pool, etc)
 export class GraphQLStack extends Stack {
+  public userPool: cognito.UserPool;
+  public identityPool: cognito.CfnIdentityPool;
+  public appClient: cognito.UserPoolClient;
   public appsyncAPI: appsync.GraphqlApi;
   public cognitoAuthRole: iam.Role;
   public pythonGQLLayer: pythonLambda.PythonLayerVersion;
@@ -43,6 +44,8 @@ export class GraphQLStack extends Stack {
         removalPolicy: RemovalPolicy.DESTROY,
       },
     );
+    this.userPool = cognitoUserPool;
+
     const aesUserPoolDomain = cognitoUserPool.addDomain('aes-auth-userpool', {
       cognitoDomain: {
         domainPrefix: 'aesauth'
@@ -50,6 +53,7 @@ export class GraphQLStack extends Stack {
     });
 
     const portalAppClient = cognitoUserPool.addClient("portalAppClient");
+    this.appClient = portalAppClient;
 
     const cognitoIdentityPool = new cognito.CfnIdentityPool(
       this,
@@ -64,6 +68,7 @@ export class GraphQLStack extends Stack {
         ],
       }
     );
+    this.identityPool = cognitoIdentityPool;
 
     const authRole = new iam.Role(this, "CognitoAuthRole", {
       assumedBy: new iam.WebIdentityPrincipal(
@@ -345,43 +350,6 @@ export class GraphQLStack extends Stack {
       description: "Python Lambda GQL/REST libraries and middleware"
     });
     this.pythonGQLLayer = pythonGQLLayer;
-
-    // Lambda handler to load data to AES, and delete DDB entries
-    // const aesLoaderLambda = new pythonLambda.PythonFunction(
-    //   this,
-    //   "DynamoDBToAESLoader",
-    //   {
-    //     entry: "./src/lambda/aes-loader",
-    //     handler: "handler",
-    //     index: "index.py",
-    //     runtime: lambda.Runtime.PYTHON_3_8,
-    //     timeout: Duration.seconds(10),
-    //     layers: [pythonGQLLayer],
-    //     environment: {
-    //       AES_HOST_URL: cfnEsDomain.getAtt("DomainEndpoint").toString(),
-    //     },
-    //   }
-    // );
-    // this.aesLoaderLambda = aesLoaderLambda;
-
-    // aesLoaderLambda.addToRolePolicy(new iam.PolicyStatement({
-    //   effect: iam.Effect.ALLOW,
-    //   actions: [
-    //     "es:ESHttpPost",
-    //     "es:ESHttpPut",
-    //     "es:ESHttpDelete",
-    //   ],
-    //   resources: [cfnEsDomain.getAtt("Arn").toString().concat("/*")]
-    // }));
-    // esDomain.grantIndexWrite("ppe_monitoring", aesLoaderLambda);
-
-    // aesLoaderLambda.addEventSource(new events.KinesisEventSource(replicationStream, {
-    //   startingPosition: lambda.StartingPosition.LATEST,
-    //   batchSize: 100,
-    //   enabled: true,
-    //   bisectBatchOnError: true,
-    //   maxBatchingWindow: Duration.minutes(5),
-    // }));
 
     new CfnOutput(this, "GraphQLAPIUrl", {
       value: appsyncAPI.graphqlUrl,

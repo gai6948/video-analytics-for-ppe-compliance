@@ -199,7 +199,6 @@ export class FrameProcessorStack extends Stack {
 
     violationAlarmTopic.addSubscription(new sub.LambdaSubscription(faceDetectorFunction));
 
-
     new CfnOutput(this, "FrameBucketName", {
       value: processedFrameBucket.bucketName,
       description: "Name of the S3 bucket storing the image frames",

@@ -196,6 +196,18 @@ export class MonitoringDashboard extends Stack {
           label: "Invocations",
         },
       }),
+      new cw.GraphWidget({
+        title: "Fargate-AutoScaler-Function-Errors",
+        left: [fargateAutoScalerError],
+        right: [fargateAutoScalerInvocation],
+        liveData: true,
+        leftYAxis: {
+          label: "Errors",
+        },
+        rightYAxis: {
+          label: "Invocations",
+        },
+      }),      
     );
 
     dashboard.addWidgets(
@@ -231,18 +243,6 @@ export class MonitoringDashboard extends Stack {
           label: "Error",
         },
       }),
-      new cw.GraphWidget({
-        title: "Fargate-AutoScaler-Function-Errors",
-        left: [fargateAutoScalerError],
-        right: [fargateAutoScalerInvocation],
-        liveData: true,
-        leftYAxis: {
-          label: "Errors",
-        },
-        rightYAxis: {
-          label: "Invocations",
-        },
-      }),      
     );
 
   }
