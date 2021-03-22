@@ -64,7 +64,7 @@ module.exports = (s3) => {
           ACL,
           Bucket: FILE_BUCKET,
           Key: CONFIG_FILENAME,
-          Body: `window.s3PortalSettings = ${JSON.stringify({
+          Body: `window.portalSettings = ${JSON.stringify({
             identityPoolId: COGNITO_IDENTITY_POOL,
             userPoolId: COGNITO_USERPOOL_ID,
             userPoolWebClientId: COGNITO_USERPOOLCLIENT_ID,

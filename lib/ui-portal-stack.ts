@@ -42,6 +42,7 @@ export class UIPortalStack extends cdk.Stack {
         COGNITO_IDENTITY_POOL: props.identityPool.ref,
         COGNITO_USERPOOL_ID: props.userPool.userPoolId,
         COGNITO_USERPOOLCLIENT_ID: props.appClient.userPoolClientId,
+        GQL_ENDPOINT: props.appsyncAPI.graphqlUrl,
         TO_BUCKET: portalUIBucket.bucketName,
         REGION: "us-west-2",
         FRAME_BUCKET: props.frameBucket.bucketName,
