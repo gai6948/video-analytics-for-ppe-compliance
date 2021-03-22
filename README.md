@@ -63,7 +63,25 @@ npm install
 npx cdk deploy --require-approval never --json true -O pipeline-output.json
 ```
 
-Wait for the deployment to finish, then we will deploy the remaining stuffs
+Wait for the deployment to finish, then we will deploy the remaining stuffs.
+
+After the deployment completes, we will add the cretaed CodeCommit repository as our remote repo:
+```
+codecommiturl=$(jq -r '.VideoAnalyticsPipelineStack.CodeCommitRepoSshUrl' pipeline-output.json)
+git remote add codecommit $codecommiturl
+```
 
 ### Deploy the solution
+
+Now we can deploy the resources that powers our solution.
+
+First we will uncomment the deployment stage of our pipeline:
+`sed -i .bak 's|// ||' lib/pipeline-stack.ts`
+
+And then we will push the code to the remote repo so it is automatically deployed
+```
+git add .
+git commit -m "Initial Commit"
+git push -u codecommit master
+```
 

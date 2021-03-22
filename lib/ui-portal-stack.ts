@@ -59,7 +59,7 @@ export class UIPortalStack extends cdk.Stack {
       portalUIBucket.grantReadWrite(setupLambda);
 
       new cdk.CfnCustomResource(this, 'SetupUICR', {
-        serviceToken: setupLambda.functionArn
+        serviceToken: setupLambda.functionArn,
       });
   
       const portalOAI = new cloudfront.OriginAccessIdentity(this, "UIOAI");

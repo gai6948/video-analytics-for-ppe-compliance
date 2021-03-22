@@ -9,14 +9,12 @@ export class PipelineStack extends Stack {
   constructor(scope: App, id: string, props: StackProps) {
     super(scope, id, props);
 
-    // Create a CodeCommit repository
     const repository = new codecommit.Repository(this, "codecommitRepo", {
       repositoryName: "video-analytics-for-ppe-compliance",
       description:
         "Sample implementation of video analytics solution on AWS with ML capabilities",
     });
 
-    // CDK pipeline
     const srcArtifact = new codepipeline.Artifact(
       "video-analytics-src-artifact"
     );
@@ -51,7 +49,7 @@ export class PipelineStack extends Stack {
       selfMutating: true
     });
 
-    const deploymentStage = new VideoAnalyticsDeploymentStage(this, "Deployment", {
+    const deploymentStage = new VideoAnalyticsDeploymentStage(this, "Deploy", {
       env: { region: "us-west-2" },
     });
     cdkPipeline.addApplicationStage(deploymentStage);
