@@ -33,7 +33,7 @@ export class UIPortalStack extends cdk.Stack {
       });
   
       const setupLambda = new lambda.Function(this, "SetupUILambda", {
-        code: lambda.Code.fromInline('console.log("hi")'),
+        code: lambda.Code.fromAsset("./src/lambda/setup-portal"),
         handler: 'index.handler',
         runtime: lambda.Runtime.NODEJS_12_X,
         timeout: cdk.Duration.minutes(10),

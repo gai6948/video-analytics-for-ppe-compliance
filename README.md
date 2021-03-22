@@ -48,6 +48,22 @@ Kibana dashboard is used for visualizing the PPE violation data over a time-seri
 
 ## Deployment
 
-This solution was developed by AWS CDK, and deployment is done through CodePipeline.
+This solution was developed by AWS CDK, and deployment is done through CodePipeline, otherwise the deployment can slow up your machine and takes a lot of time.
 
-First initiate
+### Prequisites
+
+First make sure you have installed [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) and have Node.JS v10 or above. You should also have [jq](https://stedolan.github.io/jq/) installed. You should also have [SSH key set up for CodeCommit](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-ssh-unixes.html)
+
+### Deploy the CDK Pipeline
+
+As the first step we will deploy the CDK pipeline. Region is assumed to be us-west-2, but you can change that in `bin/cdk.ts`
+
+```
+npm install
+npx cdk deploy --require-approval never --json true -O pipeline-output.json
+```
+
+Wait for the deployment to finish, then we will deploy the remaining stuffs
+
+### Deploy the solution
+
