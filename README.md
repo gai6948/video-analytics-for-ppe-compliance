@@ -112,6 +112,7 @@ In order to reduce deployment time (otherwise 1 more hour of maven build), the c
 ## Backlog
 
 * Web UI for creating Rekognition face collection using browser webcam
+* Fix bounding box dislocation in face detector Lambda
 * Alarm deduplication in case of same person appearing in consecutive alarms
 * Custom ML model instead of Rekognition PPE API
 

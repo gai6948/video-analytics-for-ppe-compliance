@@ -34,10 +34,18 @@ export class PipelineStack extends Stack {
         sourceArtifact: srcArtifact,
         cloudAssemblyArtifact,
         installCommands: [
+          // "cd src/monitoring-portal",
+          // "npm i",
+          // "cd ../.."
           "npm ci",
           "npm i --save-dev esbuild@0",
         ],
         buildCommands: [
+          // "echo Building Monitoring Portal...",
+          // "cd src/monitoring-portal",
+          // "npm i",
+          // "npm run build",
+          // "cd ../.."
           "echo Preparing CDK deployment...",
           "npm run build",
         ],
